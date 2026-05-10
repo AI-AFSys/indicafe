@@ -323,30 +323,21 @@
         <h3 id="results-heading" class="text-lg font-display font-semibold text-roast-800"></h3>
         <p class="text-xs text-roast-400 mt-0.5">Nearest first · Chains excluded · Travel times estimated</p>
       </div>
-      <!-- Map toggle (mobile) -->
-      <button
-        id="map-toggle"
-        onclick="toggleMapPanel()"
-        class="md:hidden flex items-center gap-1.5 text-xs font-medium text-roast-500 hover:text-roast-800 border border-roast-200 rounded-lg px-3 py-2 transition-colors focus-ring flex-shrink-0"
-      >
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
-        <span id="map-toggle-label">Show Map</span>
-      </button>
     </div>
 
-    <div class="flex gap-6 items-start">
+    <div class="flex flex-col md:flex-row gap-6 items-start">
 
-      <!-- Left: results list -->
-      <div id="results-panel" class="flex-1 min-w-0 space-y-4 md:max-h-[calc(100vh-160px)] md:overflow-y-auto md:pr-1">
-        <!-- cards injected here -->
-      </div>
-
-      <!-- Right: sticky map (desktop) -->
-      <div id="map-panel" class="hidden w-[400px] flex-shrink-0">
-        <div class="sticky top-4">
-          <div id="map" class="rounded-2xl overflow-hidden card-shadow h-[520px]"></div>
+      <!-- Map — above list on mobile, right column on desktop -->
+      <div id="map-panel" class="hidden w-full md:w-[400px] flex-shrink-0 order-1 md:order-2">
+        <div class="md:sticky md:top-4">
+          <div id="map" class="rounded-2xl overflow-hidden card-shadow h-56 md:h-[520px]"></div>
           <p class="text-xs text-roast-300 text-center mt-2">Click a marker for details</p>
         </div>
+      </div>
+
+      <!-- Results list — below map on mobile, left column on desktop -->
+      <div id="results-panel" class="flex-1 min-w-0 space-y-4 order-2 md:order-1">
+        <!-- cards injected here -->
       </div>
 
     </div>
@@ -678,7 +669,7 @@
       </div>`;
     }
 
-    return `<article class="bg-white rounded-2xl p-5 card-shadow card-lift card-appear" style="animation-delay:${idx * 60}ms">
+    return `<article id="card-${idx}" class="bg-white rounded-2xl p-5 card-shadow card-lift card-appear" style="animation-delay:${idx * 60}ms">
       ${photoHtml}
       <div class="flex items-start justify-between gap-3 mb-2">
         <div class="min-w-0">
@@ -847,6 +838,15 @@
           </div>`
         );
         infoWindow.open(googleMap, marker);
+
+        // Scroll to and briefly highlight the matching card
+        const card = document.getElementById(`card-${i}`);
+        if (card) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          card.style.outline = '2.5px solid #C17A2E';
+          card.style.outlineOffset = '3px';
+          setTimeout(() => { card.style.outline = ''; card.style.outlineOffset = ''; }, 1800);
+        }
       });
       markers.push(marker);
       bounds.extend(pos);
@@ -856,27 +856,7 @@
 
     const panel = $('map-panel');
     panel.classList.remove('hidden');
-    panel.style.display = window.innerWidth >= 768 ? 'block' : 'none';
     google.maps.event.trigger(googleMap, 'resize');
-  }
-
-  function toggleMapPanel() {
-    mapPanelVisible = !mapPanelVisible;
-    const panel = $('map-panel');
-    const label = $('map-toggle-label');
-
-    if (mapPanelVisible) {
-      panel.style.display = 'block';
-      panel.classList.add('mb-4');
-      label.textContent = 'Hide Map';
-      $('map-toggle').classList.add('bg-roast-800', 'text-cream', 'border-roast-800');
-      if (googleMap) google.maps.event.trigger(googleMap, 'resize');
-    } else {
-      panel.style.display = 'none';
-      panel.classList.remove('mb-4');
-      label.textContent = 'Show Map';
-      $('map-toggle').classList.remove('bg-roast-800', 'text-cream', 'border-roast-800');
-    }
   }
 
   // ────────────────────────────────────────────────────────────────
