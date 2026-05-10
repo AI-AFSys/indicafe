@@ -149,6 +149,13 @@ const DISQUALIFYING_TYPES = new Set([
   'lodging', 'hotel',
   'art_gallery', 'museum', 'library',
   'school', 'university',
+  'sandwich_shop', 'fast_food_restaurant', 'hamburger_restaurant',
+  'pizza_restaurant', 'seafood_restaurant', 'steak_house',
+  'sushi_restaurant', 'ramen_restaurant', 'chinese_restaurant',
+  'japanese_restaurant', 'korean_restaurant', 'indian_restaurant',
+  'mexican_restaurant', 'italian_restaurant', 'thai_restaurant',
+  'vegetarian_restaurant', 'vegan_restaurant',
+  'meal_takeaway', 'meal_delivery',
 ]);
 
 function isChain(name) {
@@ -159,10 +166,14 @@ function isChain(name) {
 function isCoffeeVenue(place) {
   const types = place.types || [];
   const name  = (place.displayName?.text || '').toLowerCase();
+
+  // Reject anything whose primary purpose is clearly not a coffee shop
   if (types.some(t => DISQUALIFYING_TYPES.has(t))) return false;
-  if (types.some(t => ['cafe', 'coffee_shop', 'food', 'bakery', 'restaurant'].includes(t))) return true;
-  if (/coffee|cafe|café|espresso|brew|roast|bean|cup|latte|cappuccino/.test(name)) return true;
-  return false;
+
+  // Must have a cafe/coffee-shop type OR a coffee keyword in the name
+  const hasCafeType     = types.some(t => ['cafe', 'coffee_shop'].includes(t));
+  const hasCoffeeWord   = /coffee|café|espresso|brew|roast|latte|cappuccino|barista/.test(name);
+  return hasCafeType || hasCoffeeWord;
 }
 
 function haversine(lat1, lon1, lat2, lon2) {

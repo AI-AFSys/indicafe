@@ -763,11 +763,11 @@
 
     leafletMap.fitBounds(bounds, { padding: [40, 40] });
 
-    // Show map panel on desktop
+    // Show on desktop, keep hidden on mobile (toggle button handles mobile)
     const panel = $('map-panel');
     panel.classList.remove('hidden');
-    panel.classList.add('hidden', 'md:block');
-    leafletMap.invalidateSize();
+    panel.style.display = window.innerWidth >= 768 ? 'block' : 'none';
+    setTimeout(() => leafletMap.invalidateSize(), 150);
   }
 
   function toggleMapPanel() {
@@ -776,14 +776,14 @@
     const label = $('map-toggle-label');
 
     if (mapPanelVisible) {
-      panel.classList.remove('hidden');
-      panel.classList.add('block', 'mb-4');
+      panel.style.display = 'block';
+      panel.classList.add('mb-4');
       label.textContent = 'Hide Map';
       $('map-toggle').classList.add('bg-roast-800', 'text-cream', 'border-roast-800');
-      if (leafletMap) leafletMap.invalidateSize();
+      setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, 150);
     } else {
-      panel.classList.add('hidden');
-      panel.classList.remove('block', 'mb-4');
+      panel.style.display = 'none';
+      panel.classList.remove('mb-4');
       label.textContent = 'Show Map';
       $('map-toggle').classList.remove('bg-roast-800', 'text-cream', 'border-roast-800');
     }
