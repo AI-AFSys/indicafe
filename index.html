@@ -172,7 +172,7 @@
   </style>
 </head>
 
-<body class="bg-cream text-roast-800 grain-bg antialiased min-h-screen flex flex-col">
+<body class="bg-cream text-roast-800 grain-bg antialiased min-h-screen flex flex-col overflow-x-hidden">
 
   <!-- ═══════════════════════════════════════════ HEADER ═══ -->
   <header class="bg-roast-800 dot-pattern relative overflow-hidden">
@@ -663,7 +663,7 @@
 
     let photoHtml = '';
     if (photoUrl) {
-      photoHtml = `<div class="relative h-40 sm:h-48 rounded-xl overflow-hidden mb-4 -mx-1">
+      photoHtml = `<div class="relative h-40 sm:h-48 rounded-xl overflow-hidden mb-4">
         <img src="${esc(photoUrl)}" alt="${esc(name)}" class="w-full h-full object-cover" loading="lazy">
         <div class="absolute inset-0 bg-gradient-to-t from-roast-900/60 via-transparent to-transparent"></div>
       </div>`;
