@@ -164,28 +164,19 @@ function isChain(name) {
 }
 
 function isCoffeeVenue(place) {
-  const primaryType = place.primaryType || '';
-  const types       = place.types       || [];
-  const name        = (place.displayName?.text || '').toLowerCase();
+  const types = place.types || [];
+  const name  = (place.displayName?.text || '').toLowerCase();
 
-  // Reject by primary type first — this is the most reliable signal
-  if (DISQUALIFYING_TYPES.has(primaryType)) return false;
+  // Reject if a disqualifying type is present
   if (types.some(t => DISQUALIFYING_TYPES.has(t))) return false;
 
-  // Primary type is unambiguously a cafe or coffee shop → accept
-  if (primaryType === 'cafe' || primaryType === 'coffee_shop') return true;
+  // Accept if it has a recognisable food/cafe type
+  if (types.some(t => ['cafe', 'coffee_shop', 'food', 'bakery', 'restaurant'].includes(t))) return true;
 
-  // Primary type is bakery → accept only if coffee keywords are in the name
-  // (standalone bakeries that aren't also coffee-focused are excluded)
-  if (primaryType === 'bakery') {
-    return /coffee|café|espresso|brew|latte|cappuccino/.test(name);
-  }
+  // Accept if the name contains coffee-related words
+  if (/coffee|cafe|café|espresso|brew|roast|bean|cup|latte|cappuccino/.test(name)) return true;
 
-  // Everything else (restaurant, food, deli, etc.) → require BOTH a
-  // cafe/coffee_shop type in the types array AND a coffee keyword in the name
-  const hasCafeType   = types.some(t => ['cafe', 'coffee_shop'].includes(t));
-  const hasCoffeeWord = /coffee|café|espresso|brew|roast|latte|cappuccino|barista/.test(name);
-  return hasCafeType && hasCoffeeWord;
+  return false;
 }
 
 function haversine(lat1, lon1, lat2, lon2) {
@@ -251,15 +242,15 @@ module.exports = async function handler(req, res) {
 
   let placesData;
   try {
-    const resp = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
+    const resp = await fetch('https://places.googleapis.com/v1/places:searchText', {
       method: 'POST',
       headers: {
-        'Content-Type':    'application/json',
-        'X-Goog-Api-Key':  apiKey,
+        'Content-Type':     'application/json',
+        'X-Goog-Api-Key':   apiKey,
         'X-Goog-FieldMask': FIELD_MASK,
       },
       body: JSON.stringify({
-        includedTypes: ['cafe'],
+        textQuery: 'coffee',
         locationRestriction: {
           circle: {
             center: { latitude: userLat, longitude: userLng },
@@ -267,7 +258,7 @@ module.exports = async function handler(req, res) {
           },
         },
         maxResultCount: 20,
-        rankPreference:  'DISTANCE',
+        rankPreference: 'DISTANCE',
       }),
     });
 
