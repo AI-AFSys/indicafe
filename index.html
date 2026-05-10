@@ -19,11 +19,9 @@
 
   <!--
   ╔══════════════════════════════════════════════════════╗
-  ║  GOOGLE ADSENSE — Replace with your Publisher ID     ║
+  ║  GOOGLE ADSENSE — loaded only after cookie consent   ║
   ╚══════════════════════════════════════════════════════╝
-  Sign up at: https://www.google.com/adsense/
   -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5263522779676417" crossorigin="anonymous"></script>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -361,10 +359,35 @@
   <footer class="border-t border-roast-100 bg-white mt-auto">
     <div class="max-w-5xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-2">
       <p class="text-roast-400 text-xs">&copy; 2026 indi.cafe &mdash; Supporting independent coffee culture</p>
-      <p class="text-roast-300 text-xs">Data: Google Places &bull; Excludes national chains &bull; Times are estimates</p>
+      <div class="flex items-center gap-3 text-roast-300 text-xs">
+        <span>Data: Google Places &bull; Excludes national chains &bull; Times are estimates</span>
+        <span>&bull;</span>
+        <a href="/privacy.html" class="hover:text-roast-600 transition-colors underline underline-offset-2">Privacy Policy</a>
+        <span>&bull;</span>
+        <button onclick="showCookieBanner()" class="hover:text-roast-600 transition-colors underline underline-offset-2 cursor-pointer">Cookie settings</button>
+      </div>
     </div>
   </footer>
 
+
+  <!-- ═══════════════════════════════════════════ COOKIE BANNER ═══ -->
+  <div id="cookie-banner" class="hidden fixed bottom-0 inset-x-0 z-50 p-4">
+    <div class="max-w-3xl mx-auto bg-roast-800 text-cream rounded-2xl px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4" style="box-shadow:0 -2px 24px rgba(59,31,12,0.25)">
+      <div class="flex-1 text-sm leading-relaxed">
+        <span class="font-semibold">We use cookies.</span>
+        <span class="text-roast-300"> Accepting allows Google AdSense to show personalised ads. Declining means no ads and no cookies. </span>
+        <a href="/privacy.html" class="text-roast-300 underline underline-offset-2 hover:text-cream transition-colors">Privacy Policy</a>
+      </div>
+      <div class="flex gap-2 flex-shrink-0">
+        <button onclick="handleConsent('declined')" class="px-4 py-2 rounded-xl border border-roast-600 text-roast-300 hover:text-cream hover:border-roast-400 text-sm font-medium transition-colors">
+          Decline
+        </button>
+        <button onclick="handleConsent('accepted')" class="px-4 py-2 rounded-xl bg-roast-400 hover:bg-roast-300 text-roast-900 text-sm font-semibold transition-colors" style="box-shadow:0 2px 8px rgba(193,122,46,0.35)">
+          Accept
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ═══════════════════════════════════════════ JAVASCRIPT ═══ -->
   <script>
@@ -374,10 +397,54 @@
   //  │  ADSENSE: replace slot IDs after sign-up                    │
   //  │  https://www.google.com/adsense/                            │
   //  └─────────────────────────────────────────────────────────────┘
-  const ADSENSE_CLIENT     = 'ca-pub-5263522779676417';
+  const ADSENSE_CLIENT      = 'ca-pub-5263522779676417';
   const ADSENSE_SLOT_MID    = 'XXXXXXXXXX';
   const ADSENSE_SLOT_BOTTOM = 'YYYYYYYYYY';
   // ════════════════════════════════════════════════════════════════
+
+  // ────────────────────────────────────────────────────────────────
+  //  COOKIE CONSENT
+  //  AdSense script only loads after explicit acceptance.
+  //  Preference is stored in localStorage (never leaves the device).
+  // ────────────────────────────────────────────────────────────────
+  const CONSENT_KEY = 'indicafe_cookie_consent';
+  let adsenseLoaded = false;
+
+  function loadAdsense() {
+    if (adsenseLoaded) return;
+    adsenseLoaded = true;
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADSENSE_CLIENT;
+    s.crossOrigin = 'anonymous';
+    document.head.appendChild(s);
+  }
+
+  function showCookieBanner() {
+    $('cookie-banner').classList.remove('hidden');
+  }
+
+  function hideCookieBanner() {
+    $('cookie-banner').classList.add('hidden');
+  }
+
+  function handleConsent(choice) {
+    localStorage.setItem(CONSENT_KEY, choice);
+    hideCookieBanner();
+    if (choice === 'accepted') loadAdsense();
+  }
+
+  // Check stored preference on load
+  (function initConsent() {
+    const stored = localStorage.getItem(CONSENT_KEY);
+    if (stored === 'accepted') {
+      loadAdsense();
+    } else if (!stored) {
+      // First visit — show banner after a short delay so the page renders first
+      setTimeout(showCookieBanner, 800);
+    }
+    // 'declined' → do nothing
+  })();
 
   // ────────────────────────────────────────────────────────────────
   //  STATE
