@@ -251,7 +251,8 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         textQuery: 'coffee',
-        locationRestriction: {
+        // textSearch uses locationBias (not locationRestriction) for circle regions
+        locationBias: {
           circle: {
             center: { latitude: userLat, longitude: userLng },
             radius: searchRadius,
@@ -279,6 +280,7 @@ module.exports = async function handler(req, res) {
   const filtered = places
     .filter(p => !isChain(p.displayName?.text) && isCoffeeVenue(p))
     .map(p => {
+      // map first so we have distanceM for the radius filter below
       const placeLat = p.location.latitude;
       const placeLng = p.location.longitude;
       const dist     = haversine(userLat, userLng, placeLat, placeLng);
@@ -308,6 +310,7 @@ module.exports = async function handler(req, res) {
         _photoName:  p.photos?.[0]?.name       || null,
       };
     })
+    .filter(item => item.distanceM <= searchRadius)  // hard-enforce radius (locationBias is soft)
     .sort((a, b) => a.distanceM - b.distanceM)
     .slice(0, 10);
 
