@@ -542,43 +542,32 @@
   $('address-input').addEventListener('keydown', e => { if (e.key === 'Enter') searchByAddress(); });
 
   // ────────────────────────────────────────────────────────────────
-  //  SEARCH  (with auto-expanding radius)
+  //  SEARCH
   // ────────────────────────────────────────────────────────────────
-  const EXPAND_RADII = [1000, 2000, 5000, 10000];
-
   async function runSearch() {
     $('loading').classList.remove('hidden');
     $('results-section').classList.add('hidden');
     $('error-msg').classList.add('hidden');
 
-    const requestedRadius = parseInt($('radius-select').value, 10);
-    const startIdx = EXPAND_RADII.indexOf(requestedRadius);
-    const radii    = EXPAND_RADII.slice(startIdx >= 0 ? startIdx : 0);
+    const radius = parseInt($('radius-select').value, 10);
 
-    for (let i = 0; i < radii.length; i++) {
-      const radius = radii[i];
-      if (i > 0) showStatus(`No results within ${fmtDist(radii[i - 1])} — expanding to ${fmtDist(radius)}…`);
-
-      try {
-        const resp = await fetch(`/api/search?lat=${userLat}&lng=${userLng}&radius=${radius}`);
-        if (!resp.ok) {
-          const data = await resp.json().catch(() => ({ error: `HTTP ${resp.status}` }));
-          throw new Error(data.detail || data.error || `Search failed (${resp.status})`);
-        }
-        const data = await resp.json();
-        if (data.results?.length) {
-          renderResults(data.results);
-          return;
-        }
-      } catch (err) {
-        $('loading').classList.add('hidden');
-        showError(`Search failed: ${err.message}`);
-        return;
+    try {
+      const resp = await fetch(`/api/search?lat=${userLat}&lng=${userLng}&radius=${radius}`);
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => ({ error: `HTTP ${resp.status}` }));
+        throw new Error(data.detail || data.error || `Search failed (${resp.status})`);
       }
+      const data = await resp.json();
+      if (data.results?.length) {
+        renderResults(data.results);
+      } else {
+        $('loading').classList.add('hidden');
+        showError('No independent coffee shops found nearby. Try a different location or a larger radius.');
+      }
+    } catch (err) {
+      $('loading').classList.add('hidden');
+      showError(`Search failed: ${err.message}`);
     }
-
-    $('loading').classList.add('hidden');
-    showError('No independent coffee shops found nearby. Try a different location or a larger radius.');
   }
 
   // ────────────────────────────────────────────────────────────────
