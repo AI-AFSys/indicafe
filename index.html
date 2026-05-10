@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>indi.cafe — Find Independent Coffee Shops Near You</title>
+  <meta name="description" content="Discover the nearest independent coffee shops to your location. No chains — just great local cafes, sorted by distance.">
+  <meta property="og:title" content="indi.cafe — Independent Coffee Near You">
+  <meta property="og:description" content="Find indie coffee shops near you. No Starbucks, no Costa. Just the good stuff.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!--
+  ╔══════════════════════════════════════════════════════╗
+  ║  GOOGLE ADSENSE — Replace with your Publisher ID     ║
+  ╚══════════════════════════════════════════════════════╝
+  Sign up at: https://www.google.com/adsense/
+  -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5263522779676417" crossorigin="anonymous"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream:  '#FDF6EE',
+            roast: {
+               50: '#FDF6EE',
+              100: '#F5E8D7',
+              200: '#E8C9A8',
+              300: '#D4A06A',
+              400: '#C17A2E',
+              500: '#9B5B1A',
+              600: '#7D3F10',
+              700: '#5C2C0A',
+              800: '#3B1F0C',
+              900: '#1A0E06',
+            },
+          },
+          fontFamily: {
+            display: ['"Playfair Display"', 'Georgia', 'serif'],
+            body:    ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    h1, h2, h3, h4 { font-family: 'Playfair Display', Georgia, serif; }
+
+    /* Grain texture */
+    .grain-bg::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 300px 300px;
+    }
+
+    /* Layered warm shadow */
+    .card-shadow {
+      box-shadow:
+        0 1px 2px  rgba(59,31,12,0.07),
+        0 4px 12px rgba(59,31,12,0.08),
+        0 16px 40px rgba(59,31,12,0.05);
+    }
+    .card-shadow:hover {
+      box-shadow:
+        0 2px 4px  rgba(59,31,12,0.09),
+        0 8px 24px rgba(59,31,12,0.13),
+        0 28px 60px rgba(59,31,12,0.07);
+    }
+
+    /* Button shadow */
+    .btn-shadow {
+      box-shadow: 0 2px 8px rgba(59,31,12,0.25), 0 1px 2px rgba(59,31,12,0.15);
+    }
+    .btn-shadow:hover {
+      box-shadow: 0 4px 16px rgba(59,31,12,0.30), 0 2px 4px rgba(59,31,12,0.18);
+    }
+
+    /* Card lift transition — only transform and opacity */
+    .card-lift {
+      transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1),
+                  box-shadow 0.22s cubic-bezier(0.4,0,0.2,1);
+    }
+    .card-lift:hover { transform: translateY(-2px); }
+
+    /* Focus ring */
+    .focus-ring:focus-visible {
+      outline: 2px solid #C17A2E;
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+
+    /* Travel mode badges */
+    .badge-walk  { background: #ECFDF5; color: #065F46; }
+    .badge-cycle { background: #EFF6FF; color: #1E40AF; }
+    .badge-drive { background: #FFF7ED; color: #C2410C; }
+
+    /* Review text clamping */
+    .review-clamp {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Star colours */
+    .star-filled { color: #E8A857; }
+    .star-empty  { color: #E8C9A8; }
+
+    /* Skeleton shimmer */
+    .skeleton {
+      background: linear-gradient(90deg, #F5E8D7 25%, #E8C9A8 50%, #F5E8D7 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite linear;
+    }
+    @keyframes shimmer {
+      from { background-position: 200% 0; }
+      to   { background-position: -200% 0; }
+    }
+
+    /* Smooth scroll */
+    html { scroll-behavior: smooth; }
+
+    /* Map */
+    #map { background: #F5E8D7; }
+
+    /* Results panel scrollbar */
+    #results-panel::-webkit-scrollbar       { width: 5px; }
+    #results-panel::-webkit-scrollbar-track { background: #F5E8D7; border-radius: 10px; }
+    #results-panel::-webkit-scrollbar-thumb { background: #C17A2E; border-radius: 10px; }
+
+    /* Dot pattern for header */
+    .dot-pattern {
+      background-image: radial-gradient(circle, rgba(253,246,238,0.12) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+
+    /* Fade-in animation for cards */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .card-appear {
+      animation: fadeSlideUp 0.35s cubic-bezier(0.4,0,0.2,1) both;
+    }
+
+    /* Input focus glow */
+    #address-input:focus {
+      box-shadow: 0 0 0 3px rgba(193,122,46,0.15);
+    }
+
+    /* Active press */
+    button:active:not(:disabled) { transform: scale(0.98); }
+  </style>
+</head>
+
+<body class="bg-cream text-roast-800 grain-bg antialiased min-h-screen flex flex-col">
+
+  <!-- ═══════════════════════════════════════════ HEADER ═══ -->
+  <header class="bg-roast-800 dot-pattern relative overflow-hidden">
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+
+      <!-- Logo -->
+      <a href="/" class="flex items-center gap-3 focus-ring rounded-lg p-1">
+        <div class="w-9 h-9 rounded-full bg-roast-400 flex items-center justify-center flex-shrink-0 btn-shadow">
+          <!-- Coffee cup icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FDF6EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 8h1a4 4 0 0 1 0 8h-1"/>
+            <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/>
+            <line x1="6" y1="2" x2="6" y2="4"/>
+            <line x1="10" y1="2" x2="10" y2="4"/>
+            <line x1="14" y1="2" x2="14" y2="4"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-cream text-xl font-display font-bold tracking-tight leading-none">indi.cafe</p>
+          <p class="text-roast-300 text-xs font-light tracking-wide mt-0.5">Independent Coffee, Near You</p>
+        </div>
+      </a>
+
+      <p class="hidden sm:block text-roast-300 text-sm font-display italic">No chains. Just great coffee.</p>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════ SEARCH HERO ═══ -->
+  <section class="bg-gradient-to-b from-roast-800 via-roast-700 to-roast-600 py-10 px-4">
+    <div class="max-w-xl mx-auto text-center">
+      <h2 class="text-3xl md:text-[2.4rem] font-display font-bold text-cream leading-tight mb-7">
+        Find Independent Coffee Shops<br>
+        <span class="text-roast-300 font-normal italic">Near You</span>
+      </h2>
+
+      <!-- Search card -->
+      <div class="bg-cream rounded-2xl p-4 sm:p-5 card-shadow">
+
+        <!-- Address row -->
+        <div class="flex gap-2 mb-3">
+          <div class="relative flex-1">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-roast-300 pointer-events-none">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </span>
+            <input
+              id="address-input"
+              type="text"
+              placeholder="Enter address or postcode…"
+              class="w-full pl-9 pr-3 py-3 rounded-xl border border-roast-200 bg-white text-roast-800 text-sm focus:outline-none focus:border-roast-400 transition-colors placeholder-roast-300 focus-ring"
+              autocomplete="off"
+            />
+          </div>
+          <button
+            id="search-btn"
+            onclick="searchByAddress()"
+            class="px-4 py-3 bg-roast-600 hover:bg-roast-700 text-cream text-sm font-medium rounded-xl transition-colors focus-ring flex-shrink-0 btn-shadow"
+          >
+            Search
+          </button>
+        </div>
+
+        <!-- Divider -->
+        <div class="flex items-center gap-3 mb-3">
+          <div class="flex-1 h-px bg-roast-100"></div>
+          <span class="text-roast-300 text-xs font-medium">or</span>
+          <div class="flex-1 h-px bg-roast-100"></div>
+        </div>
+
+        <!-- Locate + radius row -->
+        <div class="flex gap-2">
+          <button
+            id="locate-btn"
+            onclick="detectLocation()"
+            class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-roast-800 hover:bg-roast-900 text-cream text-sm font-medium rounded-xl transition-colors focus-ring btn-shadow"
+          >
+            <svg id="locate-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
+            </svg>
+            <span id="locate-label">Use My Location</span>
+          </button>
+
+          <!-- Radius -->
+          <div class="relative">
+            <select
+              id="radius-select"
+              class="appearance-none pl-3 pr-8 py-3 rounded-xl border border-roast-200 bg-white text-roast-700 text-sm focus:outline-none focus:border-roast-400 focus-ring cursor-pointer transition-colors"
+            >
+              <option value="1000" selected>1 km</option>
+              <option value="2000">2 km</option>
+              <option value="3000">3 km</option>
+              <option value="5000">5 km</option>
+              <option value="10000">10 km</option>
+            </select>
+            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-roast-300">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+            </span>
+          </div>
+        </div>
+
+        <!-- Status line -->
+        <p id="location-status" class="hidden mt-3 text-xs text-roast-400 text-center leading-relaxed"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ TOP AD ═══ -->
+  <div class="max-w-5xl mx-auto w-full px-4 pt-4">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-5263522779676417"
+         data-ad-slot="XXXXXXXXXX"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ ERROR ═══ -->
+  <div id="error-msg" class="hidden max-w-xl mx-auto w-full px-4 mt-4">
+    <div class="flex items-start gap-3 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+      <svg class="flex-shrink-0 mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="error-text"></span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ LOADING ═══ -->
+  <div id="loading" class="hidden max-w-5xl mx-auto w-full px-4 py-6">
+    <div class="flex items-center gap-3 text-roast-400 mb-5">
+      <div class="w-4 h-4 border-2 border-roast-200 border-t-roast-500 rounded-full animate-spin flex-shrink-0"></div>
+      <span class="text-sm">Finding independent coffee shops near you…</span>
+    </div>
+    <div class="space-y-4">
+      <div class="bg-white rounded-2xl p-5 card-shadow"><div class="h-5 skeleton rounded-lg w-1/2 mb-3"></div><div class="h-4 skeleton rounded-lg w-full mb-2"></div><div class="h-4 skeleton rounded-lg w-4/5"></div></div>
+      <div class="bg-white rounded-2xl p-5 card-shadow"><div class="h-5 skeleton rounded-lg w-2/3 mb-3"></div><div class="h-4 skeleton rounded-lg w-full mb-2"></div><div class="h-4 skeleton rounded-lg w-3/4"></div></div>
+      <div class="bg-white rounded-2xl p-5 card-shadow"><div class="h-5 skeleton rounded-lg w-1/3 mb-3"></div><div class="h-4 skeleton rounded-lg w-5/6 mb-2"></div><div class="h-4 skeleton rounded-lg w-full"></div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ RESULTS ═══ -->
+  <section id="results-section" class="hidden flex-1 max-w-5xl mx-auto w-full px-4 py-5 pb-12">
+
+    <!-- Results bar -->
+    <div class="flex items-center justify-between mb-5 gap-3">
+      <div>
+        <h3 id="results-heading" class="text-lg font-display font-semibold text-roast-800"></h3>
+        <p class="text-xs text-roast-400 mt-0.5">Nearest first · Chains excluded · Travel times estimated</p>
+      </div>
+      <!-- Map toggle (mobile) -->
+      <button
+        id="map-toggle"
+        onclick="toggleMapPanel()"
+        class="md:hidden flex items-center gap-1.5 text-xs font-medium text-roast-500 hover:text-roast-800 border border-roast-200 rounded-lg px-3 py-2 transition-colors focus-ring flex-shrink-0"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+        <span id="map-toggle-label">Show Map</span>
+      </button>
+    </div>
+
+    <div class="flex gap-6 items-start">
+
+      <!-- Left: results list -->
+      <div id="results-panel" class="flex-1 min-w-0 space-y-4 md:max-h-[calc(100vh-160px)] md:overflow-y-auto md:pr-1">
+        <!-- cards injected here -->
+      </div>
+
+      <!-- Right: sticky map (desktop) -->
+      <div id="map-panel" class="hidden w-[400px] flex-shrink-0">
+        <div class="sticky top-4">
+          <div id="map" class="rounded-2xl overflow-hidden card-shadow h-[520px]"></div>
+          <p class="text-xs text-roast-300 text-center mt-2">Click a marker for details</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════ FOOTER ═══ -->
+  <footer class="border-t border-roast-100 bg-white mt-auto">
+    <div class="max-w-5xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p class="text-roast-400 text-xs">&copy; 2026 indi.cafe &mdash; Supporting independent coffee culture</p>
+      <p class="text-roast-300 text-xs">Data: Google Maps &bull; Excludes national chains &bull; Times are estimates</p>
+    </div>
+  </footer>
+
+
+  <!-- ═══════════════════════════════════════════ JAVASCRIPT ═══ -->
+  <script>
+  // ════════════════════════════════════════════════════════════════
+  //  CONFIGURATION
+  //  ┌─────────────────────────────────────────────────────────────┐
+  //  │ 1. Go to https://console.cloud.google.com/                  │
+  //  │ 2. Create a project → Enable these APIs:                    │
+  //  │      • Maps JavaScript API                                  │
+  //  │      • Places API                                           │
+  //  │ 3. Create an API key → restrict it to your domain           │
+  //  │ 4. Paste the key below                                      │
+  //  └─────────────────────────────────────────────────────────────┘
+  const GOOGLE_MAPS_API_KEY   = 'AIzaSyBB3R_S7ZlOHQuZTIPzLJykSc14OO-e6Mg';
+
+  //  ┌─────────────────────────────────────────────────────────────┐
+  //  │  ADSENSE: replace with your publisher ID and ad slot IDs    │
+  //  │  Sign up at https://www.google.com/adsense/                 │
+  //  └─────────────────────────────────────────────────────────────┘
+  const ADSENSE_CLIENT = 'ca-pub-5263522779676417';
+  const ADSENSE_SLOT_MID    = 'XXXXXXXXXX';  // mid-results ad slot
+  const ADSENSE_SLOT_BOTTOM = 'YYYYYYYYYY';  // bottom ad slot
+  // ════════════════════════════════════════════════════════════════
+
+  // ────────────────────────────────────────────────────────────────
+  //  CHAIN FILTER
+  //  Regex patterns for known large chains. Independent shops that
+  //  happen to share a common word (e.g. "my costa rica cafe") are
+  //  protected by word-boundary anchors where practical.
+  // ────────────────────────────────────────────────────────────────
+  const CHAIN_PATTERNS = [
+    // ── GLOBAL ───────────────────────────────────────────────────
+    /starbucks/i,
+    /mcc?af[eé]/i,
+    /\bmc\s*donald/i,
+    /tim\s+hortons?/i,
+    /\bdunkin['\s]/i,
+    /\bdunkin$/i,
+    /caribou\s+coffee/i,
+    /coffee\s+bean\s*(&|and)\s*tea/i,
+    /gloria\s+jean/i,
+    /\btully'?s\b/i,
+    /second\s+cup/i,
+    /seattle'?s\s+best/i,
+    /\bpanera\b/i,
+
+    // ── UK ───────────────────────────────────────────────────────
+    /\bcosta\s+coffee\b|\bcosta\b(?!\s*rica)/i,
+    /caff[eè]\s*nero/i,
+    /\bcafe\s+nero\b/i,
+    /pret\s+a\s+manger/i,
+    /\bpret\b(?=\s|$)/i,
+    /\bgreggs\b/i,
+    /blank\s+street/i,
+    /black\s+sheep\s+coffee/i,
+    /\bbenugo\b/i,
+    /soho\s+coffee/i,
+    /joe\s*[&+]\s*the\s+juice/i,
+    /\bpod\s+coffee\b/i,
+    /coffee\s+republic/i,
+    /harris\s*[+&]\s*hoole/i,
+    /muffin\s+break/i,
+    /wild\s+bean\s+cafe/i,
+    /patisserie\s+val[eé]rie/i,
+    /boston\s+tea\s+party/i,
+    /\bpuccinos\b/i,
+    /esquires\s+coffee/i,
+    /caff[eè]\s+concerto/i,
+    /\beat\.\s*$/i,
+    /coffee\s*#\s*1\b/i,
+    /coffee\s+no[\.\s]*1\b/i,
+
+    // ── USA ──────────────────────────────────────────────────────
+    /peet'?s\s+coffee/i,
+    /dutch\s+bros/i,
+    /scooter'?s\s+coffee/i,
+    /\bphilz\s+coffee\b/i,
+    /\bbiggby\b/i,
+    /human\s+bean/i,
+    /\bdunn\s+brothers\b/i,
+    /\bpj'?s\s+coffee\b/i,
+    /\bellianos\b/i,
+    /\b7\s*brew\b/i,
+    /\bzigg[iy]'?s\s+coffee\b/i,
+    /au\s+bon\s+pain/i,
+    /corner\s+bakery/i,
+    /einstein\s+bros/i,
+    /bruegger'?s/i,
+
+    // ── AUSTRALIA & NZ ───────────────────────────────────────────
+    /the\s+coffee\s+club/i,
+    /zarraffa'?s/i,
+    /michel'?s\s+patisserie/i,
+    /jamaica\s+blue/i,
+    /hudsons?\s+coffee/i,
+    /\bdome\s+coffee\b/i,
+    /\bdegani\b/i,
+    /columbus\s+coffee/i,
+
+    // ── GERMANY & AUSTRIA ────────────────────────────────────────
+    /\btchibo\b/i,
+    /balzac\s+coffee/i,
+    /coffee\s+fellows/i,
+    /\bmarché\b|\bmarche\b/i,
+
+    // ── FRANCE ───────────────────────────────────────────────────
+    /columbus\s+caf[eé]/i,
+    /brioche\s+dor[eé]e/i,
+    /\bpaul\s+(bakery|boulangerie|caf[eé])\b/i,
+    /\bangelina\s+paris\b/i,
+
+    // ── NETHERLANDS & BELGIUM ────────────────────────────────────
+    /bagels?\s*[&+]\s*beans?/i,
+    /doppio\s+espresso/i,
+    /coffee\s+company/i,
+    /\bkaldi\b/i,
+
+    // ── NORDIC ───────────────────────────────────────────────────
+    /espresso\s+house/i,
+    /wayne'?s\s+coffee/i,
+    /robert'?s\s+coffee/i,
+
+    // ── ITALY ────────────────────────────────────────────────────
+    /\bautogrill\b/i,
+
+    // ── SPAIN ────────────────────────────────────────────────────
+    /caf[eé]\s*[&+]\s*t[eé]/i,
+
+    // ── JAPAN ────────────────────────────────────────────────────
+    /\bdoutor\b/i,
+    /\bkomeda\b/i,
+    /st\.?\s*marc\s+caf[eé]/i,
+    /excelsior\s+caf[eé]/i,
+    /caf[eé]\s+de\s+cri[eé]/i,
+    /\bveloce\b/i,
+
+    // ── SOUTH KOREA ──────────────────────────────────────────────
+    /\bediya\b/i,
+    /caff[eé]\s+bene/i,
+    /tom\s+n\s+toms/i,
+    /a\s+twosome\s+place/i,
+    /\bhollys\s+coffee\b/i,
+    /compose\s+coffee/i,
+    /\bmega\s+coffee\b/i,
+    /angel.in.us/i,
+
+    // ── CHINA & HONG KONG ────────────────────────────────────────
+    /\bluckin\s+coffee\b/i,
+    /\bmanner\s+coffee\b/i,
+    /pacific\s+coffee/i,
+
+    // ── INDIA ────────────────────────────────────────────────────
+    /caf[eé]\s+coffee\s+day/i,
+    /\bbarista\s+coffee\b/i,
+    /\bbarista\s+lavazza\b/i,
+
+    // ── LATIN AMERICA ────────────────────────────────────────────
+    /juan\s+valdez/i,
+    /caf[eé]\s+mart[ií]nez/i,
+
+    // ── AFRICA ───────────────────────────────────────────────────
+    /mugg\s*[&+]\s*bean/i,
+    /vida\s+e\s+caff[eé]/i,
+    /seattle\s+coffee\s+company/i,
+  ];
+
+  function isChain(name) {
+    if (!name) return false;
+    return CHAIN_PATTERNS.some(p => p.test(name));
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  //  STATE
+  // ────────────────────────────────────────────────────────────────
+  let userLat = null, userLng = null;
+  let googleMap = null, markers = [], userMarker = null, infoWindow = null;
+  let placesService = null, geocoder = null;
+  let mapPanelVisible = false;
+
+  // ────────────────────────────────────────────────────────────────
+  //  HELPERS
+  // ────────────────────────────────────────────────────────────────
+  const $  = id => document.getElementById(id);
+  const esc = s => String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+  function showStatus(msg) {
+    $('location-status').textContent = msg;
+    $('location-status').classList.remove('hidden');
+  }
+  function hideStatus() { $('location-status').classList.add('hidden'); }
+
+  function showError(msg) {
+    $('error-text').textContent = msg;
+    $('error-msg').classList.remove('hidden');
+    setTimeout(() => $('error-msg').classList.add('hidden'), 10000);
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  //  DISTANCE & TRAVEL
+  // ────────────────────────────────────────────────────────────────
+  function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371000;
+    const φ1 = lat1 * Math.PI / 180, φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(Δφ/2)**2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function getTravelMode(m) {
+    if (m <= 750)  return 'walking';
+    if (m <= 2800) return 'cycling';
+    return 'driving';
+  }
+
+  function estimateTime(m, mode) {
+    // Apply urban road factor to straight-line distance
+    const road = m * 1.35;
+    const speeds = { walking: 80, cycling: 250, driving: 480 };
+    const mins = Math.max(1, Math.round(road / speeds[mode]));
+    if (mins < 60) return `${mins} min`;
+    const h = Math.floor(mins / 60), rem = mins % 60;
+    return rem ? `${h}h ${rem}m` : `${h}h`;
+  }
+
+  function fmtDist(m) {
+    return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`;
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  //  LOCATION DETECTION
+  // ────────────────────────────────────────────────────────────────
+  function detectLocation() {
+    if (!navigator.geolocation) {
+      showError('Geolocation is not supported by your browser. Please enter an address.');
+      return;
+    }
+
+    const btn = $('locate-btn');
+    btn.disabled = true;
+    $('locate-icon').outerHTML = `<div id="locate-icon" class="w-4 h-4 border-2 border-cream/40 border-t-cream rounded-full animate-spin flex-shrink-0"></div>`;
+    $('locate-label').textContent = 'Detecting…';
+    showStatus('Requesting your location — please allow access if prompted.');
+
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        userLat = pos.coords.latitude;
+        userLng = pos.coords.longitude;
+        showStatus('Location found. Searching for nearby coffee shops…');
+        resetLocateBtn();
+        runSearch();
+      },
+      err => {
+        resetLocateBtn();
+        hideStatus();
+        const msgs = {
+          1: 'Location access denied. Please allow access or enter an address.',
+          2: 'Location unavailable. Please enter an address.',
+          3: 'Location request timed out. Please try again or enter an address.',
+        };
+        showError(msgs[err.code] || 'Could not get your location.');
+      },
+      { timeout: 12000, enableHighAccuracy: true }
+    );
+  }
+
+  function resetLocateBtn() {
+    const btn = $('locate-btn');
+    btn.disabled = false;
+    $('locate-icon').outerHTML = `<svg id="locate-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>`;
+    $('locate-label').textContent = 'Use My Location';
+  }
+
+  function searchByAddress() {
+    const address = $('address-input').value.trim();
+    if (!address) { showError('Please enter an address or postcode.'); return; }
+    if (!geocoder) { showError('Maps not loaded yet — please wait a moment.'); return; }
+
+    showStatus('Looking up address…');
+    geocoder.geocode({ address }, (results, status) => {
+      if (status === 'OK' && results.length) {
+        const loc = results[0].geometry.location;
+        userLat = loc.lat();
+        userLng = loc.lng();
+        showStatus(`Searching near: ${results[0].formatted_address}`);
+        runSearch();
+      } else {
+        hideStatus();
+        showError('Address not found. Please try a different search term.');
+      }
+    });
+  }
+
+  $('address-input').addEventListener('keydown', e => { if (e.key === 'Enter') searchByAddress(); });
+
+  // ────────────────────────────────────────────────────────────────
+  //  SEARCH
+  // ────────────────────────────────────────────────────────────────
+  const EXPAND_RADII = [1000, 2000, 5000, 10000];
+
+  function runSearch() {
+    if (!placesService) { showError('Maps service not ready. Please wait and try again.'); return; }
+
+    $('loading').classList.remove('hidden');
+    $('results-section').classList.add('hidden');
+    $('error-msg').classList.add('hidden');
+
+    searchAtRadius(parseInt($('radius-select').value, 10));
+  }
+
+  function searchAtRadius(radius) {
+    const center = new google.maps.LatLng(userLat, userLng);
+    placesService.nearbySearch(
+      { location: center, radius, type: 'cafe', keyword: 'coffee' },
+      (results, status) => handleSearchResults(results, status, radius)
+    );
+  }
+
+  // Types that reveal a place is primarily something other than a coffee shop.
+  // Google sometimes tags theatres, salons etc. with 'cafe' if they have a coffee bar.
+  const DISQUALIFYING_TYPES = new Set([
+    'performing_arts_theater', 'movie_theater', 'night_club', 'bar',
+    'hair_care', 'beauty_salon', 'spa', 'nail_salon', 'barber',
+    'gym', 'fitness_center', 'health',
+    'hospital', 'doctor', 'dentist', 'pharmacy',
+    'florist', 'hardware_store', 'clothing_store', 'shoe_store',
+    'furniture_store', 'electronics_store', 'book_store',
+    'car_dealer', 'car_repair', 'gas_station',
+    'bank', 'atm', 'insurance_agency', 'real_estate_agency',
+    'lodging', 'hotel',
+    'art_gallery', 'museum', 'library',
+    'school', 'university',
+  ]);
+
+  function isCoffeeVenue(place) {
+    const types = place.types || [];
+    const name  = (place.name || '').toLowerCase();
+
+    // Reject if any disqualifying type is present
+    if (types.some(t => DISQUALIFYING_TYPES.has(t))) return false;
+
+    // Accept if it has a cafe/food type
+    if (types.some(t => ['cafe', 'food', 'bakery', 'restaurant'].includes(t))) return true;
+
+    // Accept if the name itself contains coffee-related words
+    if (/coffee|cafe|café|espresso|brew|roast|bean|cup|latte|cappuccino/.test(name)) return true;
+
+    return false;
+  }
+
+  function handleSearchResults(results, status) {
+    if (status !== google.maps.places.PlacesServiceStatus.OK || !results?.length) {
+      $('loading').classList.add('hidden');
+      showError('No coffee shops found in this area. Try increasing the search radius.');
+      return;
+    }
+
+    // Filter out chains and non-coffee venues, add distance, sort, top-10
+    const withDist = results
+      .filter(p => !isChain(p.name) && isCoffeeVenue(p))
+      .map(p => {
+        const lat = p.geometry.location.lat();
+        const lng = p.geometry.location.lng();
+        const dist = haversine(userLat, userLng, lat, lng);
+        const mode = getTravelMode(dist);
+        return { place: p, distM: dist, distText: fmtDist(dist), mode, time: estimateTime(dist, mode) };
+      })
+      .sort((a, b) => a.distM - b.distM)
+      .slice(0, 10);
+
+    if (!withDist.length) {
+      $('loading').classList.add('hidden');
+      showError('No independent coffee shops found nearby. Try a larger radius.');
+      return;
+    }
+
+    fetchAllDetails(withDist);
+  }
+
+  function fetchAllDetails(items) {
+    const enriched = new Array(items.length).fill(null);
+    let remaining = items.length;
+
+    items.forEach((item, i) => {
+      placesService.getDetails(
+        {
+          placeId: item.place.place_id,
+          fields: [
+            'name','formatted_address','geometry','rating','user_ratings_total',
+            'reviews','editorial_summary','website','opening_hours','photos','url',
+          ],
+        },
+        (detail, status) => {
+          enriched[i] = {
+            ...item,
+            detail: (status === google.maps.places.PlacesServiceStatus.OK && detail) ? detail : item.place,
+          };
+          if (--remaining === 0) renderResults(enriched.filter(Boolean));
+        }
+      );
+    });
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  //  RENDERING
+  // ────────────────────────────────────────────────────────────────
+  function renderStars(rating) {
+    if (!rating) return '';
+    const full = Math.floor(rating);
+    const half = (rating - full) >= 0.5;
+    const empty = 5 - full - (half ? 1 : 0);
+    return `<span class="star-filled text-sm">${'★'.repeat(full)}${half ? '<span style="font-size:0.7em;vertical-align:1px">▲</span>' : ''}</span><span class="star-empty text-sm">${'★'.repeat(empty)}</span>`;
+  }
+
+  function renderMiniStars(r) {
+    if (!r) return '';
+    const f = Math.round(r);
+    return `<span class="star-filled text-xs">${'★'.repeat(f)}</span><span class="star-empty text-xs">${'★'.repeat(5 - f)}</span>`;
+  }
+
+  function travelBadge(mode, time) {
+    const cfg = {
+      walking: { cls: 'badge-walk',  label: 'Walk',  icon: `<path d="M13 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/><path d="M7 20l2-6 3 3 2-5 4 2"/><path d="M8 12l2-4 3 1 1-3"/>` },
+      cycling: { cls: 'badge-cycle', label: 'Cycle', icon: `<circle cx="18" cy="17" r="3.5"/><circle cx="6" cy="17" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="m12 17-2-5 4-2 2 4h2"/>` },
+      driving: { cls: 'badge-drive', label: 'Drive', icon: `<rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>` },
+    };
+    const { cls, label, icon } = cfg[mode];
+    return `<span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${cls} flex-shrink-0">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
+      ${label} · ${time}</span>`;
+  }
+
+  function renderReviews(reviews, totalCount) {
+    if (!reviews?.length) return '';
+    // Pick the highest-rated review that has text
+    const best = reviews
+      .filter(r => r.text?.trim())
+      .sort((a, b) => (b.rating || 0) - (a.rating || 0))[0];
+    if (!best) return '';
+    // Truncate to ~120 chars at a word boundary
+    const full    = best.text.trim().replace(/\s+/g, ' ');
+    const snippet = full.length > 120 ? full.slice(0, full.lastIndexOf(' ', 120)) + '…' : full;
+    const countLabel = totalCount > 0 ? ` · ${totalCount.toLocaleString()} reviews on Google` : '';
+    return `<div class="mt-3 pt-3 border-t border-roast-100 flex items-start gap-2">
+      <svg class="flex-shrink-0 mt-0.5 text-roast-200" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
+      <div class="min-w-0">
+        <p class="text-xs text-roast-500 leading-relaxed italic">${esc(snippet)}</p>
+        <p class="text-[10px] text-roast-300 mt-1">${esc(best.author_name || 'Anonymous')} · ${renderMiniStars(best.rating)}${countLabel}</p>
+      </div>
+    </div>`;
+  }
+
+  function detectVeganPastries(detail) {
+    const corpus = [
+      detail.editorial_summary?.overview || '',
+      detail.name || '',
+      ...(detail.reviews || []).map(r => r.text || ''),
+    ].join(' ').toLowerCase();
+
+    const hasVegan    = /\bvegan\b/.test(corpus);
+    const hasPastry   = /\b(cake|cakes|pastry|pastries|baked?\s*good|scone|muffin|brownie|croissant|tart|traybake|flapjack|slice|biscuit|cookie|plant.based)\b/.test(corpus);
+    if (hasVegan && hasPastry) return 'confirmed';
+    if (hasVegan) return 'possible';
+    return 'unknown';
+  }
+
+  function renderVeganBadge(status) {
+    const leaf = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`;
+    if (status === 'confirmed') {
+      return `<span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-100">${leaf} Vegan pastries</span>`;
+    }
+    if (status === 'possible') {
+      return `<span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">${leaf} Vegan options</span>`;
+    }
+    return '';
+  }
+
+  function renderCard(item, idx) {
+    const { detail, distText, mode, time } = item;
+    const name    = detail.name || 'Unknown';
+    const addr    = detail.formatted_address || detail.vicinity || '';
+    const rating  = detail.rating;
+    const count   = detail.user_ratings_total;
+    const desc    = detail.editorial_summary?.overview || null;
+    const reviews = detail.reviews || [];
+    const website = detail.website;
+    const url     = detail.url;
+
+    // Open status
+    let statusBadge = '';
+    try {
+      const open = detail.opening_hours?.isOpen?.() ?? detail.opening_hours?.open_now ?? null;
+      if (open === true)  statusBadge = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-green-50 text-green-700 font-semibold ml-1.5">Open</span>`;
+      if (open === false) statusBadge = `<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-50 text-red-600 font-semibold ml-1.5">Closed</span>`;
+    } catch {}
+
+    // Photo
+    let photoHtml = '';
+    if (detail.photos?.length) {
+      try {
+        const photoUrl = detail.photos[0].getUrl({ maxWidth: 600, maxHeight: 220 });
+        photoHtml = `<div class="relative h-40 sm:h-48 rounded-xl overflow-hidden mb-4 -mx-1">
+          <img src="${photoUrl}" alt="${esc(name)}" class="w-full h-full object-cover" loading="lazy">
+          <div class="absolute inset-0 bg-gradient-to-t from-roast-900/60 via-transparent to-transparent"></div>
+        </div>`;
+      } catch {}
+    }
+
+    return `<article class="bg-white rounded-2xl p-5 card-shadow card-lift card-appear" style="animation-delay:${idx * 60}ms" data-idx="${idx}">
+      ${photoHtml}
+      <!-- Header -->
+      <div class="flex items-start justify-between gap-3 mb-2">
+        <div class="min-w-0">
+          <div class="flex items-baseline flex-wrap gap-x-2">
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-roast-400 text-cream text-xs font-bold flex-shrink-0">${idx + 1}</span>
+            <h3 class="text-[1.05rem] font-display font-semibold text-roast-800 leading-snug">${esc(name)}</h3>
+            ${statusBadge}
+          </div>
+          <p class="text-xs text-roast-400 mt-0.5 truncate">${esc(addr)}</p>
+        </div>
+        <!-- Distance + travel -->
+        <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+          <span class="inline-flex items-center gap-1 text-xs font-bold text-roast-600 bg-roast-100 px-2.5 py-1 rounded-full">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            ${distText}
+          </span>
+          ${travelBadge(mode, time)}
+          ${renderVeganBadge(detectVeganPastries(detail))}
+        </div>
+      </div>
+
+      <!-- Rating -->
+      ${rating ? `<div class="flex items-center gap-1.5 mb-3">
+        ${renderStars(rating)}
+        <span class="text-sm font-semibold text-roast-700">${rating.toFixed(1)}</span>
+        ${count ? `<span class="text-xs text-roast-300">(${count.toLocaleString()})</span>` : ''}
+      </div>` : ''}
+
+      <!-- Description -->
+      ${desc ? `<blockquote class="text-sm text-roast-500 italic leading-relaxed border-l-2 border-roast-200 pl-3 mb-3">${esc(desc)}</blockquote>` : ''}
+
+      <!-- Reviews -->
+      ${renderReviews(reviews, count)}
+
+      <!-- Links -->
+      <div class="flex items-center gap-4 mt-3.5 pt-3 border-t border-roast-50">
+        ${website ? `<a href="${esc(website)}" target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center gap-1.5 text-xs text-roast-400 hover:text-roast-700 transition-colors focus-ring rounded">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Website</a>` : ''}
+        ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center gap-1.5 text-xs text-roast-400 hover:text-roast-700 transition-colors focus-ring rounded">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          View on Maps</a>` : ''}
+      </div>
+    </article>`;
+  }
+
+  function renderResults(items) {
+    $('loading').classList.add('hidden');
+    const panel = $('results-panel');
+
+    if (!items.length) {
+      panel.innerHTML = `<div class="text-center py-14 text-roast-300">
+        <svg class="mx-auto mb-3" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+        <p class="text-sm font-medium">No independent coffee shops found.</p>
+        <p class="text-xs mt-1">Try a larger search radius.</p>
+      </div>`;
+      $('results-section').classList.remove('hidden');
+      return;
+    }
+
+    $('results-heading').textContent =
+      `${items.length} Independent Coffee Shop${items.length !== 1 ? 's' : ''} Nearby`;
+
+    let html = '';
+    items.forEach((item, i) => {
+      html += renderCard(item, i);
+      // Mid-results ad after card 3
+      if (i === 2 && items.length > 3) {
+        html += `<div id="ad-mid" class="py-1"></div>`;
+      }
+    });
+
+    panel.innerHTML = html;
+    $('results-section').classList.remove('hidden');
+
+    // Inject mid-results AdSense unit via DOM (innerHTML doesn't execute scripts)
+    const adMid = $('ad-mid');
+    if (adMid) {
+      const ins = document.createElement('ins');
+      ins.className = 'adsbygoogle';
+      ins.style.display = 'block';
+      ins.setAttribute('data-ad-client', ADSENSE_CLIENT);
+      ins.setAttribute('data-ad-slot', ADSENSE_SLOT_MID);
+      ins.setAttribute('data-ad-format', 'auto');
+      ins.setAttribute('data-full-width-responsive', 'true');
+      adMid.appendChild(ins);
+      try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch {}
+    }
+
+    // Bottom ad (injected after results section)
+    const adBottom = document.createElement('div');
+    adBottom.className = 'max-w-5xl mx-auto w-full px-4 pb-6';
+    const insBottom = document.createElement('ins');
+    insBottom.className = 'adsbygoogle';
+    insBottom.style.display = 'block';
+    insBottom.setAttribute('data-ad-client', ADSENSE_CLIENT);
+    insBottom.setAttribute('data-ad-slot', ADSENSE_SLOT_BOTTOM);
+    insBottom.setAttribute('data-ad-format', 'auto');
+    insBottom.setAttribute('data-full-width-responsive', 'true');
+    adBottom.appendChild(insBottom);
+    const footer = document.querySelector('footer');
+    footer.parentNode.insertBefore(adBottom, footer);
+    try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch {}
+
+    // Smooth scroll to results
+    $('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Update map
+    updateMap(items);
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  //  MAP
+  // ────────────────────────────────────────────────────────────────
+  function initGoogleMap() {
+    googleMap = new google.maps.Map($('map'), {
+      center: { lat: 51.505, lng: -0.09 },
+      zoom: 14,
+      disableDefaultUI: true,
+      zoomControl: true,
+      styles: [
+        { elementType: 'geometry',             stylers: [{ color: '#FDF6EE' }] },
+        { elementType: 'labels.text.stroke',   stylers: [{ color: '#F5E8D7' }] },
+        { elementType: 'labels.text.fill',     stylers: [{ color: '#8B6B55' }] },
+        { featureType: 'road',                 elementType: 'geometry',        stylers: [{ color: '#FFFFFF' }] },
+        { featureType: 'road',                 elementType: 'geometry.stroke', stylers: [{ color: '#E8D5C4' }] },
+        { featureType: 'water',                elementType: 'geometry',        stylers: [{ color: '#B8D4E8' }] },
+        { featureType: 'poi.park',             elementType: 'geometry',        stylers: [{ color: '#D4E8C4' }] },
+        { featureType: 'poi',                  elementType: 'labels',          stylers: [{ visibility: 'off' }] },
+        { featureType: 'transit',              elementType: 'labels',          stylers: [{ visibility: 'off' }] },
+      ],
+    });
+
+    placesService = new google.maps.places.PlacesService(googleMap);
+    geocoder      = new google.maps.Geocoder();
+    infoWindow    = new google.maps.InfoWindow();
+  }
+
+  function updateMap(items) {
+    if (!googleMap) return;
+
+    // Clear old markers
+    markers.forEach(m => m.setMap(null));
+    markers = [];
+    if (userMarker) userMarker.setMap(null);
+
+    const bounds = new google.maps.LatLngBounds();
+
+    // User pin
+    const uPos = new google.maps.LatLng(userLat, userLng);
+    userMarker = new google.maps.Marker({
+      position: uPos, map: googleMap,
+      icon: { path: google.maps.SymbolPath.CIRCLE, scale: 9,
+              fillColor: '#3B82F6', fillOpacity: 1,
+              strokeColor: '#fff', strokeWeight: 2 },
+      title: 'Your location', zIndex: 100,
+    });
+    bounds.extend(uPos);
+
+    // Shop markers
+    items.forEach((item, i) => {
+      const pos = new google.maps.LatLng(
+        item.detail.geometry.location.lat(),
+        item.detail.geometry.location.lng()
+      );
+      const marker = new google.maps.Marker({
+        position: pos, map: googleMap,
+        label: { text: String(i + 1), color: '#FDF6EE', fontSize: '11px', fontWeight: '700' },
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 15,
+                fillColor: '#C17A2E', fillOpacity: 1,
+                strokeColor: '#3B1F0C', strokeWeight: 1.5 },
+        title: item.detail.name, zIndex: 10,
+      });
+      marker.addListener('click', () => {
+        infoWindow.setContent(
+          `<div style="font-family:Inter,sans-serif;max-width:200px;padding:2px 0">
+            <b style="font-size:13px;color:#3B1F0C">${esc(item.detail.name)}</b>
+            <div style="font-size:11px;color:#8B6B55;margin-top:3px">${item.distText} · ${item.time} ${item.mode}</div>
+            ${item.detail.rating ? `<div style="font-size:11px;color:#C17A2E;margin-top:2px">★ ${item.detail.rating.toFixed(1)}</div>` : ''}
+          </div>`
+        );
+        infoWindow.open(googleMap, marker);
+      });
+      markers.push(marker);
+      bounds.extend(pos);
+    });
+
+    googleMap.fitBounds(bounds, { top: 40, right: 40, bottom: 40, left: 40 });
+
+    // Show map panel on desktop automatically
+    const panel = $('map-panel');
+    panel.classList.remove('hidden');
+    panel.classList.add('hidden', 'md:block');  // hidden on mobile, visible on desktop
+    google.maps.event.trigger(googleMap, 'resize');
+  }
+
+  function toggleMapPanel() {
+    mapPanelVisible = !mapPanelVisible;
+    const panel  = $('map-panel');
+    const toggle = $('map-toggle');
+    const label  = $('map-toggle-label');
+
+    if (mapPanelVisible) {
+      panel.classList.remove('hidden');
+      panel.classList.add('block', 'mb-4');
+      label.textContent = 'Hide Map';
+      toggle.classList.add('bg-roast-800', 'text-cream', 'border-roast-800');
+      google.maps.event.trigger(googleMap, 'resize');
+    } else {
+      panel.classList.add('hidden');
+      panel.classList.remove('block', 'mb-4');
+      label.textContent = 'Show Map';
+      toggle.classList.remove('bg-roast-800', 'text-cream', 'border-roast-800');
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  //  GOOGLE MAPS BOOTSTRAP
+  // ────────────────────────────────────────────────────────────────
+  window.onGoogleMapsReady = initGoogleMap;
+
+  (function loadMapsAPI() {
+    if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_GOOGLE_MAPS_API_KEY') {
+      showError(
+        'Google Maps API key not configured. ' +
+        'Edit index.html, find GOOGLE_MAPS_API_KEY near the top of the <script> block, and paste your key.'
+      );
+      return;
+    }
+    const s = document.createElement('script');
+    s.src   = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&libraries=places&callback=onGoogleMapsReady`;
+    s.async = true;
+    s.defer = true;
+    s.onerror = () => showError('Failed to load Google Maps. Check your API key and that Maps JavaScript API + Places API are enabled in Google Cloud Console.');
+    document.head.appendChild(s);
+  })();
+  </script>
+
+</body>
+</html>
