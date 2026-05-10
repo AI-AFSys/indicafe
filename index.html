@@ -112,14 +112,6 @@
     .badge-cycle { background: #EFF6FF; color: #1E40AF; }
     .badge-drive { background: #FFF7ED; color: #C2410C; }
 
-    /* Review text clamping */
-    .review-clamp {
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
     /* Star colours */
     .star-filled { color: #E8A857; }
     .star-empty  { color: #E8C9A8; }
@@ -140,11 +132,6 @@
 
     /* Map */
     #map { background: #F5E8D7; }
-
-    /* Results panel scrollbar */
-    #results-panel::-webkit-scrollbar       { width: 5px; }
-    #results-panel::-webkit-scrollbar-track { background: #F5E8D7; border-radius: 10px; }
-    #results-panel::-webkit-scrollbar-thumb { background: #C17A2E; border-radius: 10px; }
 
     /* Dot pattern for header */
     .dot-pattern {
@@ -427,7 +414,6 @@
   // ────────────────────────────────────────────────────────────────
   let userLat = null, userLng = null;
   let googleMap = null, markers = [], userMarker = null, infoWindow = null;
-  let mapPanelVisible = false;
 
   // ────────────────────────────────────────────────────────────────
   //  HELPERS
@@ -578,29 +564,19 @@
       ${label} · ${time}</span>`;
   }
 
-  function detectVeganPastries(item) {
+  function veganBadge(item) {
     const corpus = [
       item.description || '',
       item.name        || '',
       ...(item.reviews || []).map(r => r.text || ''),
     ].join(' ').toLowerCase();
-
     const hasVegan  = /\bvegan\b/.test(corpus);
+    if (!hasVegan) return '';
     const hasPastry = /\b(cake|cakes|pastry|pastries|baked?\s*good|scone|muffin|brownie|croissant|tart|traybake|flapjack|slice|biscuit|cookie|plant.based)\b/.test(corpus);
-    if (hasVegan && hasPastry) return 'confirmed';
-    if (hasVegan) return 'possible';
-    return 'unknown';
-  }
-
-  function renderVeganBadge(status) {
     const leaf = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`;
-    if (status === 'confirmed') {
-      return `<span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-100">${leaf} Vegan pastries</span>`;
-    }
-    if (status === 'possible') {
-      return `<span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">${leaf} Vegan options</span>`;
-    }
-    return '';
+    return hasPastry
+      ? `<span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-100">${leaf} Vegan goodies</span>`
+      : `<span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">${leaf} Vegan options</span>`;
   }
 
   function renderReviews(reviews, totalCount) {
@@ -654,7 +630,7 @@
             ${distanceText}
           </span>
           ${travelBadge(travelMode, travelTime)}
-          ${renderVeganBadge(detectVeganPastries(item))}
+          ${veganBadge(item)}
         </div>
       </div>
 
@@ -685,16 +661,6 @@
     $('loading').classList.add('hidden');
     hideStatus();
     const panel = $('results-panel');
-
-    if (!items.length) {
-      panel.innerHTML = `<div class="text-center py-14 text-roast-300">
-        <svg class="mx-auto mb-3" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
-        <p class="text-sm font-medium">No independent coffee shops found.</p>
-        <p class="text-xs mt-1">Try a different location.</p>
-      </div>`;
-      $('results-section').classList.remove('hidden');
-      return;
-    }
 
     $('results-heading').textContent =
       `${items.length} Independent Coffee Shop${items.length !== 1 ? 's' : ''} Nearby`;
