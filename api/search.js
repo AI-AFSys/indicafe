@@ -164,16 +164,28 @@ function isChain(name) {
 }
 
 function isCoffeeVenue(place) {
-  const types = place.types || [];
-  const name  = (place.displayName?.text || '').toLowerCase();
+  const primaryType = place.primaryType || '';
+  const types       = place.types       || [];
+  const name        = (place.displayName?.text || '').toLowerCase();
 
-  // Reject anything whose primary purpose is clearly not a coffee shop
+  // Reject by primary type first — this is the most reliable signal
+  if (DISQUALIFYING_TYPES.has(primaryType)) return false;
   if (types.some(t => DISQUALIFYING_TYPES.has(t))) return false;
 
-  // Must have a cafe/coffee-shop type OR a coffee keyword in the name
-  const hasCafeType     = types.some(t => ['cafe', 'coffee_shop'].includes(t));
-  const hasCoffeeWord   = /coffee|café|espresso|brew|roast|latte|cappuccino|barista/.test(name);
-  return hasCafeType || hasCoffeeWord;
+  // Primary type is unambiguously a cafe or coffee shop → accept
+  if (primaryType === 'cafe' || primaryType === 'coffee_shop') return true;
+
+  // Primary type is bakery → accept only if coffee keywords are in the name
+  // (standalone bakeries that aren't also coffee-focused are excluded)
+  if (primaryType === 'bakery') {
+    return /coffee|café|espresso|brew|latte|cappuccino/.test(name);
+  }
+
+  // Everything else (restaurant, food, deli, etc.) → require BOTH a
+  // cafe/coffee_shop type in the types array AND a coffee keyword in the name
+  const hasCafeType   = types.some(t => ['cafe', 'coffee_shop'].includes(t));
+  const hasCoffeeWord = /coffee|café|espresso|brew|roast|latte|cappuccino|barista/.test(name);
+  return hasCafeType && hasCoffeeWord;
 }
 
 function haversine(lat1, lon1, lat2, lon2) {
