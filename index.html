@@ -13,10 +13,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-  <!-- Leaflet map -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-
   <!--
   ╔══════════════════════════════════════════════════════╗
   ║  GOOGLE ADSENSE — loaded only after cookie consent   ║
@@ -140,7 +136,7 @@
     html { scroll-behavior: smooth; }
 
     /* Map */
-    #map { background: #F5E8D7; filter: sepia(18%) saturate(108%); }
+    #map { background: #F5E8D7; }
 
     /* Results panel scrollbar */
     #results-panel::-webkit-scrollbar       { width: 5px; }
@@ -170,8 +166,6 @@
     /* Active press */
     button:active:not(:disabled) { transform: scale(0.98); }
 
-    /* Leaflet popup font */
-    .leaflet-popup-content { font-family: 'Inter', system-ui, sans-serif; }
   </style>
 </head>
 
@@ -394,6 +388,13 @@
   // ════════════════════════════════════════════════════════════════
   //  CONFIGURATION
   //  ┌─────────────────────────────────────────────────────────────┐
+  //  │  GOOGLE MAPS — map display only (no Places/Geocoding)       │
+  //  │  Create a key restricted to Maps JavaScript API only,       │
+  //  │  with HTTP referrer restriction: *.indi.cafe/*              │
+  //  └─────────────────────────────────────────────────────────────┘
+  const GOOGLE_MAPS_API_KEY = 'YOUR_MAPS_JS_API_KEY';
+
+  //  ┌─────────────────────────────────────────────────────────────┐
   //  │  ADSENSE: replace slot IDs after sign-up                    │
   //  │  https://www.google.com/adsense/                            │
   //  └─────────────────────────────────────────────────────────────┘
@@ -450,7 +451,7 @@
   //  STATE
   // ────────────────────────────────────────────────────────────────
   let userLat = null, userLng = null;
-  let leafletMap = null, leafletMarkers = [], userLeafletMarker = null;
+  let googleMap = null, markers = [], userMarker = null, infoWindow = null;
   let mapPanelVisible = false;
 
   // ────────────────────────────────────────────────────────────────
@@ -776,65 +777,84 @@
     }
 
     $('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    updateLeafletMap(items);
+    updateGoogleMap(items);
   }
 
   // ────────────────────────────────────────────────────────────────
-  //  MAP  (Leaflet + CartoDB Positron)
+  //  MAP  (Google Maps JS — display only, no Places library needed)
   // ────────────────────────────────────────────────────────────────
-  function initLeafletMap() {
-    if (leafletMap) return;
-    leafletMap = L.map('map', { zoomControl: true });
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd',
-      maxZoom: 20,
-    }).addTo(leafletMap);
-    leafletMap.setView([51.505, -0.09], 14);
+  function initGoogleMap() {
+    googleMap = new google.maps.Map($('map'), {
+      center: { lat: 51.505, lng: -0.09 },
+      zoom: 14,
+      disableDefaultUI: true,
+      zoomControl: true,
+      styles: [
+        { elementType: 'geometry',             stylers: [{ color: '#FDF6EE' }] },
+        { elementType: 'labels.text.stroke',   stylers: [{ color: '#F5E8D7' }] },
+        { elementType: 'labels.text.fill',     stylers: [{ color: '#8B6B55' }] },
+        { featureType: 'road',                 elementType: 'geometry',        stylers: [{ color: '#FFFFFF' }] },
+        { featureType: 'road',                 elementType: 'geometry.stroke', stylers: [{ color: '#E8D5C4' }] },
+        { featureType: 'water',                elementType: 'geometry',        stylers: [{ color: '#B8D4E8' }] },
+        { featureType: 'poi.park',             elementType: 'geometry',        stylers: [{ color: '#D4E8C4' }] },
+        { featureType: 'poi',                  elementType: 'labels',          stylers: [{ visibility: 'off' }] },
+        { featureType: 'transit',              elementType: 'labels',          stylers: [{ visibility: 'off' }] },
+      ],
+    });
+    infoWindow = new google.maps.InfoWindow();
   }
 
-  function updateLeafletMap(items) {
-    initLeafletMap();
+  function updateGoogleMap(items) {
+    if (!googleMap) return;
 
-    leafletMarkers.forEach(m => m.remove());
-    leafletMarkers = [];
-    if (userLeafletMarker) { userLeafletMarker.remove(); userLeafletMarker = null; }
+    markers.forEach(m => m.setMap(null));
+    markers = [];
+    if (userMarker) userMarker.setMap(null);
 
-    const bounds = [];
+    const bounds = new google.maps.LatLngBounds();
 
-    // User location dot
-    userLeafletMarker = L.circleMarker([userLat, userLng], {
-      radius: 8, fillColor: '#3B82F6', fillOpacity: 1, color: '#ffffff', weight: 2,
-    }).addTo(leafletMap).bindPopup('Your location');
-    bounds.push([userLat, userLng]);
+    // User location pin
+    const uPos = new google.maps.LatLng(userLat, userLng);
+    userMarker = new google.maps.Marker({
+      position: uPos, map: googleMap,
+      icon: { path: google.maps.SymbolPath.CIRCLE, scale: 9,
+              fillColor: '#3B82F6', fillOpacity: 1,
+              strokeColor: '#fff', strokeWeight: 2 },
+      title: 'Your location', zIndex: 100,
+    });
+    bounds.extend(uPos);
 
-    // Shop markers
+    // Shop markers — data comes from the backend as flat objects
     items.forEach((item, i) => {
-      const icon = L.divIcon({
-        className: '',
-        html: `<div style="width:28px;height:28px;border-radius:50%;background:#C17A2E;border:2px solid #3B1F0C;display:flex;align-items:center;justify-content:center;color:#FDF6EE;font-size:11px;font-weight:700;font-family:Inter,sans-serif;box-shadow:0 2px 6px rgba(0,0,0,0.35)">${i + 1}</div>`,
-        iconSize:    [28, 28],
-        iconAnchor:  [14, 14],
-        popupAnchor: [0, -14],
+      const pos = new google.maps.LatLng(item.lat, item.lng);
+      const marker = new google.maps.Marker({
+        position: pos, map: googleMap,
+        label: { text: String(i + 1), color: '#FDF6EE', fontSize: '11px', fontWeight: '700' },
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 15,
+                fillColor: '#C17A2E', fillOpacity: 1,
+                strokeColor: '#3B1F0C', strokeWeight: 1.5 },
+        title: item.name, zIndex: 10,
       });
-      const marker = L.marker([item.lat, item.lng], { icon, title: item.name })
-        .addTo(leafletMap)
-        .bindPopup(`<div style="font-family:Inter,sans-serif;max-width:200px;padding:2px 0">
-          <b style="font-size:13px;color:#3B1F0C">${esc(item.name)}</b>
-          <div style="font-size:11px;color:#8B6B55;margin-top:3px">${item.distanceText} · ${item.travelTime} ${item.travelMode}</div>
-          ${item.rating ? `<div style="font-size:11px;color:#C17A2E;margin-top:2px">★ ${item.rating.toFixed(1)}</div>` : ''}
-        </div>`);
-      leafletMarkers.push(marker);
-      bounds.push([item.lat, item.lng]);
+      marker.addListener('click', () => {
+        infoWindow.setContent(
+          `<div style="font-family:Inter,sans-serif;max-width:200px;padding:2px 0">
+            <b style="font-size:13px;color:#3B1F0C">${esc(item.name)}</b>
+            <div style="font-size:11px;color:#8B6B55;margin-top:3px">${item.distanceText} · ${item.travelTime} ${item.travelMode}</div>
+            ${item.rating ? `<div style="font-size:11px;color:#C17A2E;margin-top:2px">★ ${item.rating.toFixed(1)}</div>` : ''}
+          </div>`
+        );
+        infoWindow.open(googleMap, marker);
+      });
+      markers.push(marker);
+      bounds.extend(pos);
     });
 
-    leafletMap.fitBounds(bounds, { padding: [40, 40] });
+    googleMap.fitBounds(bounds, { top: 40, right: 40, bottom: 40, left: 40 });
 
-    // Show on desktop, keep hidden on mobile (toggle button handles mobile)
     const panel = $('map-panel');
     panel.classList.remove('hidden');
     panel.style.display = window.innerWidth >= 768 ? 'block' : 'none';
-    setTimeout(() => leafletMap.invalidateSize(), 150);
+    google.maps.event.trigger(googleMap, 'resize');
   }
 
   function toggleMapPanel() {
@@ -847,7 +867,7 @@
       panel.classList.add('mb-4');
       label.textContent = 'Hide Map';
       $('map-toggle').classList.add('bg-roast-800', 'text-cream', 'border-roast-800');
-      setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, 150);
+      if (googleMap) google.maps.event.trigger(googleMap, 'resize');
     } else {
       panel.style.display = 'none';
       panel.classList.remove('mb-4');
@@ -855,6 +875,24 @@
       $('map-toggle').classList.remove('bg-roast-800', 'text-cream', 'border-roast-800');
     }
   }
+
+  // ────────────────────────────────────────────────────────────────
+  //  GOOGLE MAPS BOOTSTRAP
+  // ────────────────────────────────────────────────────────────────
+  window.onGoogleMapsReady = initGoogleMap;
+
+  (function loadMapsAPI() {
+    if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'YOUR_MAPS_JS_API_KEY') {
+      console.warn('Google Maps API key not set — map disabled. Set GOOGLE_MAPS_API_KEY in index.html.');
+      return;
+    }
+    const s = document.createElement('script');
+    s.src   = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&callback=onGoogleMapsReady`;
+    s.async = true;
+    s.defer = true;
+    s.onerror = () => console.warn('Failed to load Google Maps JS.');
+    document.head.appendChild(s);
+  })();
   </script>
 
 </body>
