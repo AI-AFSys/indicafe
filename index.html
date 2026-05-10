@@ -197,7 +197,7 @@
         </div>
         <div>
           <p class="text-cream text-xl font-display font-bold tracking-tight leading-none">indi.cafe</p>
-          <p class="text-roast-300 text-xs font-light tracking-wide mt-0.5">Independent Coffee, Near You</p>
+          <p class="text-roast-300 text-xs font-light tracking-wide mt-0.5">Independent Coffee Culture</p>
         </div>
       </a>
 
@@ -501,7 +501,7 @@
         const resp = await fetch(`/api/search?lat=${userLat}&lng=${userLng}&radius=${radius}`);
         if (!resp.ok) {
           const data = await resp.json().catch(() => ({ error: `HTTP ${resp.status}` }));
-          throw new Error(data.error || `Search failed (${resp.status})`);
+          throw new Error(data.detail || data.error || `Search failed (${resp.status})`);
         }
         const data = await resp.json();
         if (data.results?.length) {
