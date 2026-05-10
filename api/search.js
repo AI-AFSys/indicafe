@@ -225,7 +225,7 @@ const FIELD_MASK = [
 ].join(',');
 
 module.exports = async function handler(req, res) {
-  const { lat, lng, radius = '1000' } = req.query || {};
+  const { lat, lng, radius = '5000' } = req.query || {};
 
   if (!lat || !lng) {
     return res.status(400).json({ error: 'lat and lng are required' });
@@ -310,7 +310,6 @@ module.exports = async function handler(req, res) {
         _photoName:  p.photos?.[0]?.name       || null,
       };
     })
-    .filter(item => item.distanceM <= searchRadius)  // hard-enforce radius (locationBias is soft)
     .sort((a, b) => a.distanceM - b.distanceM)
     .slice(0, 10);
 

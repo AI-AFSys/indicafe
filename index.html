@@ -244,37 +244,18 @@
           <div class="flex-1 h-px bg-roast-100"></div>
         </div>
 
-        <!-- Locate + radius row -->
-        <div class="flex gap-2">
-          <button
-            id="locate-btn"
-            onclick="detectLocation()"
-            class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-roast-800 hover:bg-roast-900 text-cream text-sm font-medium rounded-xl transition-colors focus-ring btn-shadow"
-          >
-            <svg id="locate-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="3"/>
-              <path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
-            </svg>
-            <span id="locate-label">Use My Location</span>
-          </button>
-
-          <!-- Radius -->
-          <div class="relative">
-            <select
-              id="radius-select"
-              class="appearance-none pl-3 pr-8 py-3 rounded-xl border border-roast-200 bg-white text-roast-700 text-sm focus:outline-none focus:border-roast-400 focus-ring cursor-pointer transition-colors"
-            >
-              <option value="1000" selected>1 km</option>
-              <option value="2000">2 km</option>
-              <option value="3000">3 km</option>
-              <option value="5000">5 km</option>
-              <option value="10000">10 km</option>
-            </select>
-            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-roast-300">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
-            </span>
-          </div>
-        </div>
+        <!-- Locate button -->
+        <button
+          id="locate-btn"
+          onclick="detectLocation()"
+          class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-roast-800 hover:bg-roast-900 text-cream text-sm font-medium rounded-xl transition-colors focus-ring btn-shadow"
+        >
+          <svg id="locate-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>
+          </svg>
+          <span id="locate-label">Use My Location</span>
+        </button>
 
         <!-- Status line -->
         <p id="location-status" class="hidden mt-3 text-xs text-roast-400 text-center leading-relaxed"></p>
@@ -549,10 +530,8 @@
     $('results-section').classList.add('hidden');
     $('error-msg').classList.add('hidden');
 
-    const radius = parseInt($('radius-select').value, 10);
-
     try {
-      const resp = await fetch(`/api/search?lat=${userLat}&lng=${userLng}&radius=${radius}`);
+      const resp = await fetch(`/api/search?lat=${userLat}&lng=${userLng}`);
       if (!resp.ok) {
         const data = await resp.json().catch(() => ({ error: `HTTP ${resp.status}` }));
         throw new Error(data.detail || data.error || `Search failed (${resp.status})`);
@@ -562,7 +541,7 @@
         renderResults(data.results);
       } else {
         $('loading').classList.add('hidden');
-        showError('No independent coffee shops found nearby. Try a different location or a larger radius.');
+        showError('No independent coffee shops found nearby. Try a different location.');
       }
     } catch (err) {
       $('loading').classList.add('hidden');
@@ -711,7 +690,7 @@
       panel.innerHTML = `<div class="text-center py-14 text-roast-300">
         <svg class="mx-auto mb-3" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
         <p class="text-sm font-medium">No independent coffee shops found.</p>
-        <p class="text-xs mt-1">Try a larger search radius.</p>
+        <p class="text-xs mt-1">Try a different location.</p>
       </div>`;
       $('results-section').classList.remove('hidden');
       return;
