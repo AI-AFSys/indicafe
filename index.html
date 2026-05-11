@@ -512,13 +512,17 @@
   }
 
   function dogFriendlyBadge(item) {
-    const corpus = [
-      item.description || '',
-      item.name        || '',
-      ...(item.reviews || []).map(r => r.text || ''),
-    ].join(' ').toLowerCase();
-    const hasDogs = /\b(dog[- ]?friendly|dogs?\s+welcome[d]?|dogs?\s+allowed|dogs?\s+ok|pet[- ]?friendly|well[- ]?behaved\s+dogs?|dogs?\s+on\s+leads?|four[- ]legged|bring\s+your\s+dog)\b/.test(corpus);
-    if (!hasDogs) return '';
+    if (item.allowsDogs === false) return '';
+    if (item.allowsDogs !== true) {
+      // fall back to text detection when the API field is absent
+      const corpus = [
+        item.description || '',
+        item.name        || '',
+        ...(item.reviews || []).map(r => r.text || ''),
+      ].join(' ').toLowerCase();
+      const hasDogs = /\b(dog[- ]?friendly|dogs?\s+welcome[d]?|dogs?\s+allowed|dogs?\s+ok|pet[- ]?friendly|well[- ]?behaved\s+dogs?|dogs?\s+on\s+leads?|four[- ]legged|bring\s+your\s+dog)\b/.test(corpus);
+      if (!hasDogs) return '';
+    }
     const paw = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" cy="17" rx="4" ry="3"/><ellipse cx="7" cy="14.5" rx="2" ry="2.5"/><ellipse cx="17" cy="14.5" rx="2" ry="2.5"/><ellipse cx="9" cy="9.5" rx="2" ry="2.5"/><ellipse cx="15" cy="9.5" rx="2" ry="2.5"/></svg>`;
     return `<span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100">${paw} Dog friendly</span>`;
   }

@@ -223,6 +223,7 @@ function renderCard(cafe) {
       <p class="text-roast-400 text-sm mt-1 leading-snug" itemprop="address">${esc(cafe.address)}</p>
       ${rating}
       ${desc}
+      ${cafe.allowsDogs === true ? `<span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100 mt-2"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" cy="17" rx="4" ry="3"/><ellipse cx="7" cy="14.5" rx="2" ry="2.5"/><ellipse cx="17" cy="14.5" rx="2" ry="2.5"/><ellipse cx="9" cy="9.5" rx="2" ry="2.5"/><ellipse cx="15" cy="9.5" rx="2" ry="2.5"/></svg> Dog friendly</span>` : ''}
       ${links ? `<div class="mt-3 flex flex-wrap gap-x-1 gap-y-1">${links}</div>` : ''}
     </div>
   </article>`;
@@ -419,7 +420,7 @@ const FIELD_MASK = [
   'places.id', 'places.displayName', 'places.formattedAddress',
   'places.location', 'places.rating', 'places.userRatingCount',
   'places.editorialSummary', 'places.websiteUri', 'places.photos',
-  'places.types', 'places.googleMapsUri',
+  'places.types', 'places.googleMapsUri', 'places.allowsDogs',
 ].join(',');
 
 module.exports = async function handler(req, res) {
@@ -486,6 +487,7 @@ module.exports = async function handler(req, res) {
       rating:      p.rating                 || null,
       reviewCount: p.userRatingCount        || 0,
       description: p.editorialSummary?.text || null,
+      allowsDogs:  p.allowsDogs             ?? null,
       website:     p.websiteUri             || null,
       mapsUrl:     p.googleMapsUri          || null,
       _photoName:  p.photos?.[0]?.name      || null,

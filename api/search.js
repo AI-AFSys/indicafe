@@ -222,6 +222,7 @@ const FIELD_MASK = [
   'places.types',
   'places.primaryType',
   'places.googleMapsUri',
+  'places.allowsDogs',
 ].join(',');
 
 module.exports = async function handler(req, res) {
@@ -302,6 +303,7 @@ module.exports = async function handler(req, res) {
         })),
         website:     p.websiteUri              || null,
         mapsUrl:     p.googleMapsUri           || null,
+        allowsDogs:  p.allowsDogs ?? null,
         isOpenNow:   p.regularOpeningHours?.openNow ?? null,
         distanceM:   Math.round(dist),
         distanceText: fmtDist(dist),
