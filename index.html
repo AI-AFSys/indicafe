@@ -8,6 +8,14 @@
   <meta property="og:title" content="indi.cafe — Independent Coffee Near You">
   <meta property="og:description" content="Find indie coffee shops near you, chain free.">
 
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#3B1F0C">
+  <link rel="apple-touch-icon" href="/icons/icon-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="indi.cafe">
+
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -734,6 +742,12 @@
     s.onerror = () => console.warn('Failed to load Google Maps JS.');
     document.head.appendChild(s);
   })();
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
+    }
   </script>
 
 </body>
