@@ -207,6 +207,32 @@ function fmtDist(m) {
   return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`;
 }
 
+async function enrichWithOsmDogData(items, centerLat, centerLng, radiusM) {
+  const osmRadius = Math.min(radiusM, 8000);
+  const query = `[out:json][timeout:10];(node["amenity"~"^(cafe|coffee_shop|restaurant|bakery)$"]["dog"~"^(yes|leashed)$"](around:${osmRadius},${centerLat},${centerLng});way["amenity"~"^(cafe|coffee_shop|restaurant|bakery)$"]["dog"~"^(yes|leashed)$"](around:${osmRadius},${centerLat},${centerLng}););out center;`;
+  try {
+    const resp = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `data=${encodeURIComponent(query)}`,
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!resp.ok) return;
+    const { elements = [] } = await resp.json();
+    const osmVenues = elements
+      .map(el => ({ lat: el.lat ?? el.center?.lat, lng: el.lon ?? el.center?.lon }))
+      .filter(v => v.lat != null);
+    for (const item of items) {
+      if (item.allowsDogs != null) continue;
+      if (osmVenues.some(osm => haversine(item.lat, item.lng, osm.lat, osm.lng) < 60)) {
+        item.allowsDogs = true;
+      }
+    }
+  } catch (err) {
+    console.error('OSM enrichment failed:', err.message);
+  }
+}
+
 const FIELD_MASK = [
   'places.id',
   'places.displayName',
@@ -336,6 +362,8 @@ module.exports = async function handler(req, res) {
       item.photoUrl = null;
     }
   }));
+
+  await enrichWithOsmDogData(filtered, userLat, userLng, searchRadius);
 
   res.status(200).json({ results: filtered });
 };
