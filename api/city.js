@@ -402,7 +402,8 @@ module.exports = async function handler(req, res) {
       mapsUrl:     p.googleMapsUri          || null,
       _photoName:  p.photos?.[0]?.name      || null,
     }))
-    .slice(0, 10);
+    .sort((a, b) => (b.rating || 0) - (a.rating || 0) || b.reviewCount - a.reviewCount)
+    .slice(0, 9);
 
   // Resolve photo URLs in parallel
   await Promise.all(filtered.map(async item => {
