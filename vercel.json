@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/(london|manchester|birmingham|leeds|glasgow|liverpool|edinburgh|bristol|sheffield|newcastle|nottingham|cardiff|leicester|brighton|oxford|cambridge|bath|york|exeter|belfast)",
+      "destination": "/api/city?slug=$1"
+    }
+  ]
+}
