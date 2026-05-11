@@ -85,22 +85,22 @@ const CITIES = {
   kampala:        { name: 'Kampala',         lat:   0.3476, lng:  32.5825, region: 'Africa' },
   'dar-es-salaam':{ name: 'Dar es Salaam',   lat:  -6.7924, lng:  39.2083, region: 'Africa' },
 
-  // ── Oceania ───────────────────────────────────────────────────
-  sydney:        { name: 'Sydney',           lat: -33.8688, lng: 151.2093, region: 'Oceania' },
-  melbourne:     { name: 'Melbourne',        lat: -37.8136, lng: 144.9631, region: 'Oceania' },
-  brisbane:      { name: 'Brisbane',         lat: -27.4698, lng: 153.0251, region: 'Oceania' },
-  perth:         { name: 'Perth',            lat: -31.9505, lng: 115.8605, region: 'Oceania' },
-  auckland:      { name: 'Auckland',         lat: -36.8509, lng: 174.7645, region: 'Oceania' },
-  adelaide:      { name: 'Adelaide',         lat: -34.9285, lng: 138.6007, region: 'Oceania' },
-  'gold-coast':  { name: 'Gold Coast',       lat: -28.0167, lng: 153.4000, region: 'Oceania' },
-  wellington:    { name: 'Wellington',       lat: -41.2866, lng: 174.7756, region: 'Oceania' },
-  canberra:      { name: 'Canberra',         lat: -35.2809, lng: 149.1300, region: 'Oceania' },
-  christchurch:  { name: 'Christchurch',     lat: -43.5321, lng: 172.6362, region: 'Oceania' },
+  // ── Australasia ───────────────────────────────────────────────
+  sydney:        { name: 'Sydney',           lat: -33.8688, lng: 151.2093, region: 'Australasia' },
+  melbourne:     { name: 'Melbourne',        lat: -37.8136, lng: 144.9631, region: 'Australasia' },
+  brisbane:      { name: 'Brisbane',         lat: -27.4698, lng: 153.0251, region: 'Australasia' },
+  perth:         { name: 'Perth',            lat: -31.9505, lng: 115.8605, region: 'Australasia' },
+  auckland:      { name: 'Auckland',         lat: -36.8509, lng: 174.7645, region: 'Australasia' },
+  adelaide:      { name: 'Adelaide',         lat: -34.9285, lng: 138.6007, region: 'Australasia' },
+  'gold-coast':  { name: 'Gold Coast',       lat: -28.0167, lng: 153.4000, region: 'Australasia' },
+  wellington:    { name: 'Wellington',       lat: -41.2866, lng: 174.7756, region: 'Australasia' },
+  canberra:      { name: 'Canberra',         lat: -35.2809, lng: 149.1300, region: 'Australasia' },
+  christchurch:  { name: 'Christchurch',     lat: -43.5321, lng: 172.6362, region: 'Australasia' },
 };
 
 const REGION_ORDER = [
   'United Kingdom', 'Europe', 'Asia',
-  'North America', 'South America', 'Africa', 'Oceania',
+  'North America', 'South America', 'Africa', 'Australasia',
 ];
 
 const DEFAULT_RADIUS = 5000;
