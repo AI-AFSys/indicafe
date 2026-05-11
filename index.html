@@ -185,7 +185,7 @@
         </div>
       </a>
 
-      <p class="hidden sm:block text-roast-300 text-sm font-display italic">No chains. Just the best local, independent roasters and baristas.</p>
+      <p class="hidden sm:block text-roast-300 text-sm font-display italic">No chains. Just the best independent roasters and baristas.</p>
     </div>
   </header>
 
@@ -511,6 +511,18 @@
       : `<span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">${leaf} Vegan options</span>`;
   }
 
+  function dogFriendlyBadge(item) {
+    const corpus = [
+      item.description || '',
+      item.name        || '',
+      ...(item.reviews || []).map(r => r.text || ''),
+    ].join(' ').toLowerCase();
+    const hasDogs = /\b(dog[- ]?friendly|dogs?\s+welcome[d]?|dogs?\s+allowed|dogs?\s+ok|pet[- ]?friendly|well[- ]?behaved\s+dogs?|dogs?\s+on\s+leads?|four[- ]legged|bring\s+your\s+dog)\b/.test(corpus);
+    if (!hasDogs) return '';
+    const paw = `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" cy="17" rx="4" ry="3"/><ellipse cx="7" cy="14.5" rx="2" ry="2.5"/><ellipse cx="17" cy="14.5" rx="2" ry="2.5"/><ellipse cx="9" cy="9.5" rx="2" ry="2.5"/><ellipse cx="15" cy="9.5" rx="2" ry="2.5"/></svg>`;
+    return `<span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100">${paw} Dog friendly</span>`;
+  }
+
   function renderReviews(reviews, totalCount) {
     if (!reviews?.length) return '';
     const best = reviews
@@ -563,6 +575,7 @@
           </span>
           ${travelBadge(travelMode, travelTime)}
           ${veganBadge(item)}
+          ${dogFriendlyBadge(item)}
         </div>
       </div>
 
