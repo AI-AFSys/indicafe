@@ -105,90 +105,7 @@ const REGION_ORDER = [
 
 const DEFAULT_RADIUS = 5000;
 
-const CHAIN_PATTERNS = [
-  /starbucks/i, /mcc?af[eé]/i, /\bmc\s*donald/i, /tim\s+hortons?/i,
-  /\bdunkin['\s]/i, /\bdunkin$/i, /caribou\s+coffee/i,
-  /coffee\s+bean\s*(&|and)\s*tea/i, /gloria\s+jean/i, /\btully'?s\b/i,
-  /second\s+cup/i, /seattle'?s\s+best/i, /\bpanera\b/i,
-  /\bcosta\s+coffee\b|\bcosta\b(?!\s*rica)/i, /caff[eè]\s*nero/i,
-  /\bcafe\s+nero\b/i, /pret\s+a\s+manger/i, /\bpret\b(?=\s|$)/i,
-  /\bgreggs\b/i, /blank\s+street/i, /black\s+sheep\s+coffee/i,
-  /\bbenugo\b/i, /soho\s+coffee/i, /joe\s*[&+]\s*the\s+juice/i,
-  /\bpod\s+coffee\b/i, /coffee\s+republic/i, /harris\s*[+&]\s*hoole/i,
-  /muffin\s+break/i, /wild\s+bean\s+cafe/i, /patisserie\s+val[eé]rie/i,
-  /boston\s+tea\s+party/i, /\bpuccinos\b/i, /esquires\s+coffee/i,
-  /caff[eè]\s+concerto/i, /\beat\.\s*$/i, /coffee\s*#\s*1\b/i,
-  /coffee\s+no[\.\s]*1\b/i, /peet'?s\s+coffee/i, /dutch\s+bros/i,
-  /espresso\s+house/i, /wayne'?s\s+coffee/i,
-];
-
-const DISQUALIFYING_TYPES = new Set([
-  'performing_arts_theater','movie_theater','night_club','bar',
-  'hair_care','beauty_salon','spa','nail_salon','barber',
-  'gym','fitness_center','hospital','doctor','dentist','pharmacy',
-  'florist','hardware_store','clothing_store','shoe_store',
-  'furniture_store','electronics_store','book_store',
-  'car_dealer','car_repair','gas_station',
-  'bank','atm','insurance_agency','real_estate_agency',
-  'lodging','hotel','art_gallery','museum','library',
-  'school','university',
-  'sandwich_shop','fast_food_restaurant','hamburger_restaurant',
-  'pizza_restaurant','seafood_restaurant','steak_house',
-  'sushi_restaurant','ramen_restaurant','chinese_restaurant',
-  'japanese_restaurant','korean_restaurant','indian_restaurant',
-  'mexican_restaurant','italian_restaurant','thai_restaurant',
-  'vegetarian_restaurant','vegan_restaurant',
-  'meal_takeaway','meal_delivery',
-]);
-
-function isChain(name) {
-  if (!name) return false;
-  return CHAIN_PATTERNS.some(p => p.test(name));
-}
-
-function isCoffeeVenue(place) {
-  const types = place.types || [];
-  const name  = (place.displayName?.text || '').toLowerCase();
-  if (types.some(t => DISQUALIFYING_TYPES.has(t))) return false;
-  if (types.some(t => ['cafe','coffee_shop','food','bakery','restaurant'].includes(t))) return true;
-  if (/coffee|cafe|café|espresso|brew|roast|bean|cup|latte|cappuccino/.test(name)) return true;
-  return false;
-}
-
-function haversine(lat1, lon1, lat2, lon2) {
-  const R  = 6371000;
-  const φ1 = lat1 * Math.PI / 180, φ2 = lat2 * Math.PI / 180;
-  const Δφ = (lat2 - lat1) * Math.PI / 180;
-  const Δλ = (lon2 - lon1) * Math.PI / 180;
-  const a  = Math.sin(Δφ/2)**2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-async function enrichWithOsmDogData(items, centerLat, centerLng, radiusM) {
-  const osmRadius = Math.min(radiusM, 8000);
-  const query = `[out:json][timeout:10];(node["amenity"~"^(cafe|coffee_shop|restaurant|bakery)$"]["dog"~"^(yes|leashed)$"](around:${osmRadius},${centerLat},${centerLng});way["amenity"~"^(cafe|coffee_shop|restaurant|bakery)$"]["dog"~"^(yes|leashed)$"](around:${osmRadius},${centerLat},${centerLng}););out center;`;
-  try {
-    const resp = await fetch('https://overpass-api.de/api/interpreter', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `data=${encodeURIComponent(query)}`,
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!resp.ok) return;
-    const { elements = [] } = await resp.json();
-    const osmVenues = elements
-      .map(el => ({ lat: el.lat ?? el.center?.lat, lng: el.lon ?? el.center?.lon }))
-      .filter(v => v.lat != null);
-    for (const item of items) {
-      if (item.allowsDogs != null) continue;
-      if (osmVenues.some(osm => haversine(item._lat, item._lng, osm.lat, osm.lng) < 60)) {
-        item.allowsDogs = true;
-      }
-    }
-  } catch (err) {
-    console.error('OSM enrichment failed:', err.message);
-  }
-}
+const { isChain, isCoffeeVenue, resolvePhotoUrl } = require('./shared');
 
 function esc(str) {
   if (!str) return '';
@@ -258,7 +175,6 @@ function renderCard(cafe) {
       <p class="text-roast-400 text-sm mt-1 leading-snug" itemprop="address">${esc(cafe.address)}</p>
       ${rating}
       ${desc}
-      ${cafe.allowsDogs === true ? `<span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-100 mt-2"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" cy="17" rx="4" ry="3"/><ellipse cx="7" cy="14.5" rx="2" ry="2.5"/><ellipse cx="17" cy="14.5" rx="2" ry="2.5"/><ellipse cx="9" cy="9.5" rx="2" ry="2.5"/><ellipse cx="15" cy="9.5" rx="2" ry="2.5"/></svg> Dog friendly</span>` : ''}
       ${links ? `<div class="mt-3 flex flex-wrap gap-x-1 gap-y-1">${links}</div>` : ''}
     </div>
   </article>`;
@@ -453,9 +369,9 @@ function renderPage(slug, cityConfig, cafes) {
 
 const FIELD_MASK = [
   'places.id', 'places.displayName', 'places.formattedAddress',
-  'places.location', 'places.rating', 'places.userRatingCount',
+  'places.rating', 'places.userRatingCount',
   'places.editorialSummary', 'places.websiteUri', 'places.photos',
-  'places.types', 'places.googleMapsUri', 'places.allowsDogs',
+  'places.types', 'places.googleMapsUri',
 ].join(',');
 
 module.exports = async function handler(req, res) {
@@ -522,12 +438,9 @@ module.exports = async function handler(req, res) {
       rating:      p.rating                 || null,
       reviewCount: p.userRatingCount        || 0,
       description: p.editorialSummary?.text || null,
-      allowsDogs:  p.allowsDogs             ?? null,
       website:     p.websiteUri             || null,
       mapsUrl:     p.googleMapsUri          || null,
       _photoName:  p.photos?.[0]?.name      || null,
-      _lat:        p.location?.latitude     ?? null,
-      _lng:        p.location?.longitude    ?? null,
     }))
     .sort((a, b) => (b.rating || 0) - (a.rating || 0) || b.reviewCount - a.reviewCount)
     .slice(0, 9);
@@ -535,19 +448,8 @@ module.exports = async function handler(req, res) {
   await Promise.all(filtered.map(async item => {
     const photoName = item._photoName;
     delete item._photoName;
-    if (!photoName) { item.photoUrl = null; return; }
-    try {
-      const photoResp = await fetch(
-        `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=600&skipHttpRedirect=true&key=${apiKey}`
-      );
-      item.photoUrl = photoResp.ok ? ((await photoResp.json()).photoUri || null) : null;
-    } catch {
-      item.photoUrl = null;
-    }
+    item.photoUrl = await resolvePhotoUrl(photoName, apiKey);
   }));
-
-  await enrichWithOsmDogData(filtered, lat, lng, radius);
-  filtered.forEach(item => { delete item._lat; delete item._lng; });
 
   const html = renderPage(slug, cityConfig, filtered);
 
