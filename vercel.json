@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/(london|manchester|birmingham|leeds|glasgow|liverpool|edinburgh|bristol|sheffield|newcastle|nottingham|cardiff|leicester|brighton|oxford|cambridge|bath|york|exeter|belfast)",
+      "source": "/(london|manchester|birmingham|leeds|glasgow|liverpool|edinburgh|bristol|sheffield|newcastle|nottingham|cardiff|leicester|brighton|oxford|cambridge|bath|york|exeter|belfast|paris|berlin|madrid|rome|amsterdam|barcelona|vienna|warsaw|lisbon|prague|tokyo|seoul|singapore|bangkok|mumbai|delhi|hong-kong|kuala-lumpur|bangalore|jakarta|new-york|los-angeles|chicago|toronto|mexico-city|houston|vancouver|montreal|seattle|san-francisco|sao-paulo|buenos-aires|rio-de-janeiro|lima|bogota|santiago|medellin|quito|montevideo|caracas|lagos|cairo|nairobi|johannesburg|cape-town|casablanca|accra|addis-ababa|kampala|dar-es-salaam|sydney|melbourne|brisbane|perth|auckland|adelaide|gold-coast|wellington|canberra|christchurch)",
       "destination": "/api/city?slug=$1"
     }
   ]

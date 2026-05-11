@@ -1,29 +1,107 @@
-// Vercel serverless function — renders a server-side HTML page for a UK city
-// Route: /manchester, /leeds, etc. (via vercel.json rewrite → /api/city?slug=manchester)
+// Vercel serverless function — renders a server-side HTML page for a city
+// Route: /manchester, /tokyo, /new-york etc. (via vercel.json rewrite → /api/city?slug=…)
 // Response is cached at the edge for 24 hours.
 
 const CITIES = {
-  london:     { name: 'London',             lat: 51.5074, lng: -0.1278, radius: 3000 },
-  manchester: { name: 'Manchester',         lat: 53.4808, lng: -2.2426 },
-  birmingham: { name: 'Birmingham',         lat: 52.4862, lng: -1.8904 },
-  leeds:      { name: 'Leeds',              lat: 53.8008, lng: -1.5491 },
-  glasgow:    { name: 'Glasgow',            lat: 55.8642, lng: -4.2518 },
-  liverpool:  { name: 'Liverpool',          lat: 53.4084, lng: -2.9916 },
-  edinburgh:  { name: 'Edinburgh',          lat: 55.9533, lng: -3.1883 },
-  bristol:    { name: 'Bristol',            lat: 51.4545, lng: -2.5879 },
-  sheffield:  { name: 'Sheffield',          lat: 53.3811, lng: -1.4701 },
-  newcastle:  { name: 'Newcastle',          lat: 54.9783, lng: -1.6178 },
-  nottingham: { name: 'Nottingham',         lat: 52.9548, lng: -1.1581 },
-  cardiff:    { name: 'Cardiff',            lat: 51.4816, lng: -3.1791 },
-  leicester:  { name: 'Leicester',          lat: 52.6369, lng: -1.1398 },
-  brighton:   { name: 'Brighton',           lat: 50.8225, lng: -0.1372 },
-  oxford:     { name: 'Oxford',             lat: 51.7520, lng: -1.2577 },
-  cambridge:  { name: 'Cambridge',          lat: 52.2053, lng:  0.1218 },
-  bath:       { name: 'Bath',               lat: 51.3781, lng: -2.3597 },
-  york:       { name: 'York',               lat: 53.9600, lng: -1.0873 },
-  exeter:     { name: 'Exeter',             lat: 50.7184, lng: -3.5339 },
-  belfast:    { name: 'Belfast',            lat: 54.5973, lng: -5.9301 },
+  // ── United Kingdom ───────────────────────────────────────────
+  london:      { name: 'London',            lat: 51.5074, lng:  -0.1278, radius: 3000, region: 'United Kingdom' },
+  manchester:  { name: 'Manchester',        lat: 53.4808, lng:  -2.2426, region: 'United Kingdom' },
+  birmingham:  { name: 'Birmingham',        lat: 52.4862, lng:  -1.8904, region: 'United Kingdom' },
+  leeds:       { name: 'Leeds',             lat: 53.8008, lng:  -1.5491, region: 'United Kingdom' },
+  glasgow:     { name: 'Glasgow',           lat: 55.8642, lng:  -4.2518, region: 'United Kingdom' },
+  liverpool:   { name: 'Liverpool',         lat: 53.4084, lng:  -2.9916, region: 'United Kingdom' },
+  edinburgh:   { name: 'Edinburgh',         lat: 55.9533, lng:  -3.1883, region: 'United Kingdom' },
+  bristol:     { name: 'Bristol',           lat: 51.4545, lng:  -2.5879, region: 'United Kingdom' },
+  sheffield:   { name: 'Sheffield',         lat: 53.3811, lng:  -1.4701, region: 'United Kingdom' },
+  newcastle:   { name: 'Newcastle',         lat: 54.9783, lng:  -1.6178, region: 'United Kingdom' },
+  nottingham:  { name: 'Nottingham',        lat: 52.9548, lng:  -1.1581, region: 'United Kingdom' },
+  cardiff:     { name: 'Cardiff',           lat: 51.4816, lng:  -3.1791, region: 'United Kingdom' },
+  leicester:   { name: 'Leicester',         lat: 52.6369, lng:  -1.1398, region: 'United Kingdom' },
+  brighton:    { name: 'Brighton',          lat: 50.8225, lng:  -0.1372, region: 'United Kingdom' },
+  oxford:      { name: 'Oxford',            lat: 51.7520, lng:  -1.2577, region: 'United Kingdom' },
+  cambridge:   { name: 'Cambridge',         lat: 52.2053, lng:   0.1218, region: 'United Kingdom' },
+  bath:        { name: 'Bath',              lat: 51.3781, lng:  -2.3597, region: 'United Kingdom' },
+  york:        { name: 'York',              lat: 53.9600, lng:  -1.0873, region: 'United Kingdom' },
+  exeter:      { name: 'Exeter',            lat: 50.7184, lng:  -3.5339, region: 'United Kingdom' },
+  belfast:     { name: 'Belfast',           lat: 54.5973, lng:  -5.9301, region: 'United Kingdom' },
+
+  // ── Europe ───────────────────────────────────────────────────
+  paris:       { name: 'Paris',             lat: 48.8566, lng:   2.3522, region: 'Europe' },
+  berlin:      { name: 'Berlin',            lat: 52.5200, lng:  13.4050, region: 'Europe' },
+  madrid:      { name: 'Madrid',            lat: 40.4168, lng:  -3.7038, region: 'Europe' },
+  rome:        { name: 'Rome',              lat: 41.9028, lng:  12.4964, region: 'Europe' },
+  amsterdam:   { name: 'Amsterdam',         lat: 52.3676, lng:   4.9041, region: 'Europe' },
+  barcelona:   { name: 'Barcelona',         lat: 41.3851, lng:   2.1734, region: 'Europe' },
+  vienna:      { name: 'Vienna',            lat: 48.2082, lng:  16.3738, region: 'Europe' },
+  warsaw:      { name: 'Warsaw',            lat: 52.2297, lng:  21.0122, region: 'Europe' },
+  lisbon:      { name: 'Lisbon',            lat: 38.7223, lng:  -9.1393, region: 'Europe' },
+  prague:      { name: 'Prague',            lat: 50.0755, lng:  14.4378, region: 'Europe' },
+
+  // ── Asia ─────────────────────────────────────────────────────
+  tokyo:          { name: 'Tokyo',          lat: 35.6762, lng: 139.6503, region: 'Asia' },
+  seoul:          { name: 'Seoul',          lat: 37.5665, lng: 126.9780, region: 'Asia' },
+  singapore:      { name: 'Singapore',      lat:  1.3521, lng: 103.8198, region: 'Asia' },
+  bangkok:        { name: 'Bangkok',        lat: 13.7563, lng: 100.5018, region: 'Asia' },
+  mumbai:         { name: 'Mumbai',         lat: 19.0760, lng:  72.8777, region: 'Asia' },
+  delhi:          { name: 'Delhi',          lat: 28.6139, lng:  77.2090, region: 'Asia' },
+  'hong-kong':    { name: 'Hong Kong',      lat: 22.3193, lng: 114.1694, region: 'Asia' },
+  'kuala-lumpur': { name: 'Kuala Lumpur',   lat:  3.1390, lng: 101.6869, region: 'Asia' },
+  bangalore:      { name: 'Bangalore',      lat: 12.9716, lng:  77.5946, region: 'Asia' },
+  jakarta:        { name: 'Jakarta',        lat: -6.2088, lng: 106.8456, region: 'Asia' },
+
+  // ── North America ─────────────────────────────────────────────
+  'new-york':      { name: 'New York',       lat: 40.7128, lng:  -74.0060, region: 'North America' },
+  'los-angeles':   { name: 'Los Angeles',    lat: 34.0522, lng: -118.2437, region: 'North America' },
+  chicago:         { name: 'Chicago',        lat: 41.8781, lng:  -87.6298, region: 'North America' },
+  toronto:         { name: 'Toronto',        lat: 43.6532, lng:  -79.3832, region: 'North America' },
+  'mexico-city':   { name: 'Mexico City',    lat: 19.4326, lng:  -99.1332, region: 'North America' },
+  houston:         { name: 'Houston',        lat: 29.7604, lng:  -95.3698, region: 'North America' },
+  vancouver:       { name: 'Vancouver',      lat: 49.2827, lng: -123.1207, region: 'North America' },
+  montreal:        { name: 'Montreal',       lat: 45.5017, lng:  -73.5673, region: 'North America' },
+  seattle:         { name: 'Seattle',        lat: 47.6062, lng: -122.3321, region: 'North America' },
+  'san-francisco': { name: 'San Francisco',  lat: 37.7749, lng: -122.4194, region: 'North America' },
+
+  // ── South America ─────────────────────────────────────────────
+  'sao-paulo':      { name: 'São Paulo',     lat: -23.5558, lng: -46.6396, region: 'South America' },
+  'buenos-aires':   { name: 'Buenos Aires',  lat: -34.6037, lng: -58.3816, region: 'South America' },
+  'rio-de-janeiro': { name: 'Rio de Janeiro',lat: -22.9068, lng: -43.1729, region: 'South America' },
+  lima:             { name: 'Lima',          lat: -12.0464, lng: -77.0428, region: 'South America' },
+  bogota:           { name: 'Bogotá',        lat:   4.7110, lng: -74.0721, region: 'South America' },
+  santiago:         { name: 'Santiago',      lat: -33.4489, lng: -70.6693, region: 'South America' },
+  medellin:         { name: 'Medellín',      lat:   6.2442, lng: -75.5812, region: 'South America' },
+  quito:            { name: 'Quito',         lat:  -0.1807, lng: -78.4678, region: 'South America' },
+  montevideo:       { name: 'Montevideo',    lat: -34.9011, lng: -56.1645, region: 'South America' },
+  caracas:          { name: 'Caracas',       lat:  10.4806, lng: -66.9036, region: 'South America' },
+
+  // ── Africa ────────────────────────────────────────────────────
+  lagos:          { name: 'Lagos',           lat:   6.5244, lng:   3.3792, region: 'Africa' },
+  cairo:          { name: 'Cairo',           lat:  30.0444, lng:  31.2357, region: 'Africa' },
+  nairobi:        { name: 'Nairobi',         lat:  -1.2921, lng:  36.8219, region: 'Africa' },
+  johannesburg:   { name: 'Johannesburg',    lat: -26.2041, lng:  28.0473, region: 'Africa' },
+  'cape-town':    { name: 'Cape Town',       lat: -33.9249, lng:  18.4241, region: 'Africa' },
+  casablanca:     { name: 'Casablanca',      lat:  33.5731, lng:  -7.5898, region: 'Africa' },
+  accra:          { name: 'Accra',           lat:   5.6037, lng:  -0.1870, region: 'Africa' },
+  'addis-ababa':  { name: 'Addis Ababa',     lat:   9.0320, lng:  38.7520, region: 'Africa' },
+  kampala:        { name: 'Kampala',         lat:   0.3476, lng:  32.5825, region: 'Africa' },
+  'dar-es-salaam':{ name: 'Dar es Salaam',   lat:  -6.7924, lng:  39.2083, region: 'Africa' },
+
+  // ── Oceania ───────────────────────────────────────────────────
+  sydney:        { name: 'Sydney',           lat: -33.8688, lng: 151.2093, region: 'Oceania' },
+  melbourne:     { name: 'Melbourne',        lat: -37.8136, lng: 144.9631, region: 'Oceania' },
+  brisbane:      { name: 'Brisbane',         lat: -27.4698, lng: 153.0251, region: 'Oceania' },
+  perth:         { name: 'Perth',            lat: -31.9505, lng: 115.8605, region: 'Oceania' },
+  auckland:      { name: 'Auckland',         lat: -36.8509, lng: 174.7645, region: 'Oceania' },
+  adelaide:      { name: 'Adelaide',         lat: -34.9285, lng: 138.6007, region: 'Oceania' },
+  'gold-coast':  { name: 'Gold Coast',       lat: -28.0167, lng: 153.4000, region: 'Oceania' },
+  wellington:    { name: 'Wellington',       lat: -41.2866, lng: 174.7756, region: 'Oceania' },
+  canberra:      { name: 'Canberra',         lat: -35.2809, lng: 149.1300, region: 'Oceania' },
+  christchurch:  { name: 'Christchurch',     lat: -43.5321, lng: 172.6362, region: 'Oceania' },
 };
+
+const REGION_ORDER = [
+  'United Kingdom', 'Europe', 'Asia',
+  'North America', 'South America', 'Africa', 'Oceania',
+];
 
 const DEFAULT_RADIUS = 5000;
 
@@ -99,7 +177,7 @@ function renderStars(rating) {
 
 function renderCard(cafe) {
   const photo = cafe.photoUrl
-    ? `<div class="relative h-44 bg-roast-100 overflow-hidden flex-shrink-0">
+    ? `<div class="relative h-44 bg-roast-100 overflow-hidden">
         <img src="${esc(cafe.photoUrl)}" alt="${esc(cafe.name)}" loading="lazy"
           class="w-full h-full object-cover" style="mix-blend-multiply:multiply">
         <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
@@ -126,15 +204,11 @@ function renderCard(cafe) {
   const links = [
     cafe.website
       ? `<a href="${esc(cafe.website)}" target="_blank" rel="noopener"
-            class="text-roast-500 hover:text-roast-800 text-xs font-medium underline underline-offset-2 transition-colors">
-            Website
-          </a>`
+            class="text-roast-500 hover:text-roast-800 text-xs font-medium underline underline-offset-2 transition-colors">Website</a>`
       : '',
     cafe.mapsUrl
       ? `<a href="${esc(cafe.mapsUrl)}" target="_blank" rel="noopener"
-            class="text-roast-500 hover:text-roast-800 text-xs font-medium underline underline-offset-2 transition-colors">
-            Google Maps
-          </a>`
+            class="text-roast-500 hover:text-roast-800 text-xs font-medium underline underline-offset-2 transition-colors">Google Maps</a>`
       : '',
   ].filter(Boolean).join('<span class="text-roast-200 mx-1">·</span>');
 
@@ -154,17 +228,34 @@ function renderCard(cafe) {
   </article>`;
 }
 
+function renderCityNav(currentSlug) {
+  const byRegion = {};
+  for (const [s, c] of Object.entries(CITIES)) {
+    if (s === currentSlug) continue;
+    if (!byRegion[c.region]) byRegion[c.region] = [];
+    byRegion[c.region].push({ slug: s, name: c.name });
+  }
+
+  return REGION_ORDER.map(region => {
+    const cities = byRegion[region];
+    if (!cities) return '';
+    const links = cities.map(c =>
+      `<a href="/${esc(c.slug)}"
+        class="px-3 py-1.5 bg-roast-50 hover:bg-roast-100 text-roast-600 hover:text-roast-800
+          text-sm rounded-lg transition-colors focus-ring whitespace-nowrap">${esc(c.name)}</a>`
+    ).join('');
+    return `
+    <div>
+      <h3 class="text-xs font-semibold uppercase tracking-widest text-roast-300 mb-2">${esc(region)}</h3>
+      <div class="flex flex-wrap gap-2">${links}</div>
+    </div>`;
+  }).filter(Boolean).join('');
+}
+
 function renderPage(slug, cityConfig, cafes) {
   const { name: cityName } = cityConfig;
 
   const cards = cafes.map(renderCard).join('');
-
-  const otherCities = Object.entries(CITIES)
-    .filter(([s]) => s !== slug)
-    .map(([s, c]) =>
-      `<a href="/${s}" class="px-3 py-1.5 bg-roast-50 hover:bg-roast-100 text-roast-600 hover:text-roast-800
-        text-sm rounded-lg transition-colors focus-ring">${esc(c.name)}</a>`
-    ).join('');
 
   const jsonLd = JSON.stringify({
     '@context': 'https://schema.org',
@@ -239,9 +330,6 @@ function renderPage(slug, cityConfig, cafes) {
                   box-shadow 0.22s cubic-bezier(0.4,0,0.2,1);
     }
     .card-lift:hover { transform: translateY(-2px); }
-    .card-lift:hover .card-shadow {
-      box-shadow: 0 2px 4px rgba(59,31,12,0.09), 0 8px 24px rgba(59,31,12,0.13), 0 28px 60px rgba(59,31,12,0.07);
-    }
     .dot-pattern {
       background-image: radial-gradient(circle, rgba(253,246,238,0.12) 1px, transparent 1px);
       background-size: 22px 22px;
@@ -306,11 +394,11 @@ function renderPage(slug, cityConfig, cafes) {
       </a>
     </div>
 
-    <!-- Other cities -->
+    <!-- City directory -->
     <div class="mt-10">
-      <h2 class="text-lg font-display font-semibold text-roast-700 mb-4">Browse other UK cities</h2>
-      <div class="flex flex-wrap gap-2">
-        ${otherCities}
+      <h2 class="text-lg font-display font-semibold text-roast-700 mb-5">Browse cities</h2>
+      <div class="space-y-5">
+        ${renderCityNav(slug)}
       </div>
     </div>
   </main>
@@ -405,7 +493,6 @@ module.exports = async function handler(req, res) {
     .sort((a, b) => (b.rating || 0) - (a.rating || 0) || b.reviewCount - a.reviewCount)
     .slice(0, 9);
 
-  // Resolve photo URLs in parallel
   await Promise.all(filtered.map(async item => {
     const photoName = item._photoName;
     delete item._photoName;
