@@ -7,6 +7,7 @@
   <meta name="description" content="Discover the nearest independent coffee shops to your location. No chains — just great local cafes, sorted by distance.">
   <meta property="og:title" content="indi.cafe — Independent Coffee Near You">
   <meta property="og:description" content="Find indie coffee shops near you, chain free.">
+  <link rel="canonical" href="https://indi.cafe/">
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
@@ -192,10 +193,10 @@
   <!-- ═══════════════════════════════════════════ SEARCH HERO ═══ -->
   <section class="bg-gradient-to-b from-roast-800 via-roast-700 to-roast-600 py-10 px-4">
     <div class="max-w-xl mx-auto text-center">
-      <h2 class="text-3xl md:text-[2.4rem] font-display font-bold text-cream leading-tight mb-7">
+      <h1 class="text-3xl md:text-[2.4rem] font-display font-bold text-cream leading-tight mb-7">
         Find Independent Coffee Shops<br>
         <span class="text-roast-300 font-normal italic">Near You</span>
-      </h2>
+      </h1>
 
       <!-- Search card -->
       <div class="bg-cream rounded-2xl p-4 sm:p-5 card-shadow">
@@ -352,10 +353,6 @@
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
-  function fmtDist(m) {
-    return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`;
-  }
-
   function showStatus(msg) {
     $('location-status').textContent = msg;
     $('location-status').classList.remove('hidden');
@@ -497,7 +494,6 @@
     const corpus = [
       item.description || '',
       item.name        || '',
-      ...(item.reviews || []).map(r => r.text || ''),
     ].join(' ').toLowerCase();
     const hasVegan  = /\bvegan\b/.test(corpus);
     if (!hasVegan) return '';

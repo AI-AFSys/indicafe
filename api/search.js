@@ -62,7 +62,11 @@ module.exports = async function handler(req, res) {
 
   const userLat      = parseFloat(lat);
   const userLng      = parseFloat(lng);
-  const searchRadius = Math.min(parseFloat(radius), 50000);
+  const searchRadius = Math.min(Math.abs(parseFloat(radius)) || 5000, 50000);
+
+  if (isNaN(userLat) || isNaN(userLng) || userLat < -90 || userLat > 90 || userLng < -180 || userLng > 180) {
+    return res.status(400).json({ error: 'Invalid coordinates' });
+  }
 
   let placesData;
   try {
