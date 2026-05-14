@@ -359,7 +359,13 @@ function renderPage(slug, cityConfig, cafes) {
   <footer class="border-t border-roast-100 bg-white mt-auto">
     <div class="max-w-5xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-2">
       <p class="text-roast-400 text-xs">&copy; 2026 indi.cafe &mdash; Supporting independent coffee culture</p>
-      <a href="/privacy" class="text-roast-300 text-xs hover:text-roast-600 transition-colors">Privacy Policy</a>
+      <div class="flex items-center gap-3 text-roast-300 text-xs">
+        <a href="/about" class="hover:text-roast-600 transition-colors underline underline-offset-2">About Us</a>
+        <span>&bull;</span>
+        <a href="/contact" class="hover:text-roast-600 transition-colors underline underline-offset-2">Contact Us</a>
+        <span>&bull;</span>
+        <a href="/privacy" class="hover:text-roast-600 transition-colors underline underline-offset-2">Privacy Policy</a>
+      </div>
     </div>
   </footer>
 

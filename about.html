@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us — indi.cafe</title>
+  <meta name="description" content="About indi.cafe — a free tool to help you find independent coffee shops near you, free from national chains.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5263522779676417" crossorigin="anonymous"></script>
+
+  <!-- Vercel Web Analytics -->
+  <script defer src="/_vercel/insights/script.js"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#FDF6EE',
+            roast: {
+               50: '#FDF6EE', 100: '#F5E8D7', 200: '#E8C9A8', 300: '#D4A06A',
+              400: '#C17A2E', 500: '#9B5B1A', 600: '#7D3F10', 700: '#5C2C0A',
+              800: '#3B1F0C', 900: '#1A0E06',
+            },
+          },
+          fontFamily: {
+            display: ['"Playfair Display"', 'Georgia', 'serif'],
+            body:    ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    h1, h2, h3 { font-family: 'Playfair Display', Georgia, serif; }
+    .dot-pattern {
+      background-image: radial-gradient(circle, rgba(253,246,238,0.12) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+  </style>
+</head>
+
+<body class="bg-cream text-roast-800 antialiased min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-roast-800 dot-pattern">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3 rounded-lg p-1">
+        <div class="w-9 h-9 rounded-full bg-roast-400 flex items-center justify-center flex-shrink-0" style="box-shadow:0 2px 8px rgba(59,31,12,0.25)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FDF6EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z"/>
+            <ellipse cx="12" cy="9" rx="2.2" ry="3" transform="rotate(15 12 9)"/>
+            <path d="M12 6.5c-1.2 1-1.2 3 0 5" stroke-width="1.2"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-cream text-xl font-display font-bold tracking-tight leading-none">indi.cafe</p>
+          <p class="text-roast-300 text-xs font-light tracking-wide mt-0.5">Independent Coffee Culture</p>
+        </div>
+      </a>
+      <a href="/" class="text-roast-300 hover:text-cream text-sm transition-colors">&larr; Back to search</a>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="flex-1 max-w-2xl mx-auto w-full px-4 py-12">
+
+    <h1 class="text-4xl font-display font-bold text-roast-800 mb-2">About Us</h1>
+    <p class="text-roast-400 text-sm mb-10">Supporting independent coffee culture since 2025</p>
+
+    <div class="space-y-8 text-roast-700 leading-relaxed">
+
+      <section>
+        <h2 class="text-xl font-display font-semibold text-roast-800 mb-3">What is indi.cafe?</h2>
+        <p>indi.cafe is a free tool that helps you find the nearest independent coffee shops to your location. We believe the best coffee experiences come from local, independent cafes — not national chains — and we built this site to make it easier to discover them.</p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-display font-semibold text-roast-800 mb-3">How it works</h2>
+        <p class="mb-3">Enter your postcode, town, or share your current location, and indi.cafe searches for independent coffee shops nearby using the Google Places API. Results are filtered to exclude national and international chains, so you only see genuinely local cafes.</p>
+        <p>We show you distance, estimated travel time, opening hours, ratings, and other useful details — everything you need to find your next favourite spot.</p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-display font-semibold text-roast-800 mb-3">Our mission</h2>
+        <p>Independent coffee shops are the heart of local communities. They offer quality, character, and connection that no chain can replicate. Our goal is simple: help people find and support their local independent cafes, one cup at a time.</p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-display font-semibold text-roast-800 mb-3">Who operates this site?</h2>
+        <p>indi.cafe is operated by <strong class="text-roast-800">AFSys Ltd</strong>, a UK-based company. For any queries, you can reach us at <a href="mailto:support@afsys.uk" class="text-roast-500 hover:text-roast-800 underline underline-offset-2">support@afsys.uk</a>.</p>
+      </section>
+
+      <section>
+        <h2 class="text-xl font-display font-semibold text-roast-800 mb-3">Advertising</h2>
+        <p>indi.cafe is free to use and is supported by advertising through Google AdSense. Ads help us cover the costs of running the service. We only show ads to users who have accepted our cookie policy. For details on how advertising data is used, see our <a href="/privacy" class="text-roast-500 hover:text-roast-800 underline underline-offset-2">Privacy Policy</a>.</p>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-roast-100 bg-white mt-auto">
+    <div class="max-w-5xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p class="text-roast-400 text-xs">&copy; 2026 indi.cafe &mdash; Supporting independent coffee culture</p>
+      <div class="flex items-center gap-3 text-roast-300 text-xs">
+        <a href="/about" class="hover:text-roast-600 transition-colors underline underline-offset-2">About Us</a>
+        <span>&bull;</span>
+        <a href="/contact" class="hover:text-roast-600 transition-colors underline underline-offset-2">Contact Us</a>
+        <span>&bull;</span>
+        <a href="/privacy" class="hover:text-roast-600 transition-colors underline underline-offset-2">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

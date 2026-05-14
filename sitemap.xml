@@ -97,6 +97,8 @@
   <url><loc>https://indi.cafe/canberra</loc>        <changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://indi.cafe/christchurch</loc>    <changefreq>weekly</changefreq><priority>0.6</priority></url>
 
+  <url><loc>https://indi.cafe/about</loc>  <changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://indi.cafe/contact</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://indi.cafe/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 
 </urlset>
